@@ -1,0 +1,93 @@
+'use client';
+
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+import { Plus } from 'lucide-react';
+import { Calendar } from '@/components/Calendar';
+import { StudentsView } from '@/components/StudentsView';
+import { TasksView } from '@/components/TasksView';
+import { SettingsView } from '@/components/SettingsView';
+import { Button } from '@/components/ui/button';
+import { Session } from '@/lib/types';
+import { useNavigationSwipe } from '@/lib/hooks/useMobileSwipe';
+
+function HomeContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [view, setView] = useState<'calendar' | 'students' | 'tasks' | 'settings'>('calendar');
+  const [calendarRefresh, setCalendarRefresh] = useState(0);
+  
+  // Mobile swipe navigation
+  const { swipeRef } = useNavigationSwipe();
+
+  // Listen for view changes from URL parameters or external sources
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'students' || viewParam === 'tasks' || viewParam === 'settings' || viewParam === 'calendar') {
+      setView(viewParam as 'calendar' | 'students' | 'tasks' | 'settings');
+    }
+  }, [searchParams]);
+
+  // Listen for custom viewchange events from bottom navigation
+  useEffect(() => {
+    const handleViewChange = (event: CustomEvent) => {
+      const { view } = event.detail;
+      if (view === 'students' || view === 'tasks' || view === 'settings' || view === 'calendar') {
+        setView(view as 'calendar' | 'students' | 'tasks' | 'settings');
+      }
+    };
+
+    window.addEventListener('viewchange', handleViewChange as EventListener);
+    return () => {
+      window.removeEventListener('viewchange', handleViewChange as EventListener);
+    };
+  }, []);
+
+  // Removed handleDateSelect - Calendar component now handles its own navigation to Day View
+
+  const handleSessionClick = (session: Session) => {
+    // Use direct navigation to avoid router issues
+    window.location.href = `/sessions/${session.id}`;
+  };
+
+  const handleSessionCreated = () => {
+    setCalendarRefresh(prev => prev + 1);
+  };
+
+  const handleAddSessionClick = () => {
+    // Use direct navigation to avoid router issues
+    window.location.href = '/sessions/new';
+  };
+
+  return (
+    <div className="min-h-screen bg-background touch-manipulation" ref={swipeRef}>
+      {/* Main Content - No header here, it's in the layout */}
+      <main className="container mx-auto px-4 py-8 smooth-scroll">
+        {view === 'calendar' && (
+          <Calendar
+            onSessionClick={handleSessionClick}
+            refreshTrigger={calendarRefresh}
+          />
+        )}
+        
+        {view === 'students' && <StudentsView />}
+        
+        {view === 'tasks' && <TasksView />}
+        
+        {view === 'settings' && <SettingsView />}
+      </main>
+    </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+

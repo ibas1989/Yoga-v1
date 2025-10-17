@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Day View Navigation</title>
+</head>
+<body>
+    <h1>Calendar Day View Navigation Test</h1>
+    <p>This is a simple test to verify the Day View navigation works correctly.</p>
+    
+    <h2>Test Steps:</h2>
+    <ol>
+        <li>Open the application at <a href="http://localhost:3001" target="_blank">http://localhost:3001</a></li>
+        <li>Make sure you're on the Calendar view</li>
+        <li>Click on any date (e.g., October 20, 2025)</li>
+        <li>You should be redirected to the Day View page with time slots</li>
+        <li>The URL should be: <code>/calendar/day/2025-10-20</code></li>
+    </ol>
+    
+    <h2>Expected Day View Features:</h2>
+    <ul>
+        <li>Header with date display and navigation arrows</li>
+        <li>Day summary statistics (Total Sessions, Scheduled, Completed, Students)</li>
+        <li>Time slots from 06:00 to 22:00 in 30-minute intervals</li>
+        <li><strong>Click on empty time slots to create sessions</strong></li>
+        <li>Back button to return to calendar</li>
+    </ul>
+    
+    <h2>New Feature: Time Slot Session Creation</h2>
+    <ul>
+        <li>Click on any empty time slot (e.g., 15:00)</li>
+        <li>Should open "Session – New" page</li>
+        <li>Session Date should be pre-populated with current day</li>
+        <li>Start Time should be pre-populated with clicked time slot</li>
+        <li>Both fields should remain editable</li>
+        <li>Back button should return to the same Day View</li>
+        <li>Works on both desktop and mobile</li>
+    </ul>
+    
+    <h2>Direct Day View Links:</h2>
+    <ul>
+        <li><a href="http://localhost:3001/calendar/day/2025-10-20" target="_blank">October 20, 2025</a></li>
+        <li><a href="http://localhost:3001/calendar/day/2025-10-21" target="_blank">October 21, 2025</a></li>
+        <li><a href="http://localhost:3001/calendar/day/2025-10-22" target="_blank">October 22, 2025</a></li>
+    </ul>
+</body>
+</html>

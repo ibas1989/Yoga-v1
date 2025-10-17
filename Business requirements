@@ -1,0 +1,1196 @@
+Description
+I want a yoga classes tracker for instructors on web/mobile. 
+This application will allow me to track each student's session with me on a particular day. 
+For this, the application should allow me to add a session for a selected timeslot in the calendar, with the ability to add one or more students to that session.
+
+✅ IMPLEMENTED: Real-time UI updates with automatic refresh mechanism
+✅ IMPLEMENTED: Confirmation dialogs for all delete and update operations
+✅ IMPLEMENTED: Comprehensive notes system with real-time synchronization
+✅ IMPLEMENTED: Advanced state management with custom React hooks
+✅ IMPLEMENTED: Entity Page Structure Standardization for consistent navigation and data management
+✅ IMPLEMENTED: Persistent Navigation Structure with Fixed Top Bar and Contextual Navigation
+
+Persistent Navigation Structure:
+    ✅ IMPLEMENTED: Fixed Bottom Navigation (Mobile-Optimized)
+        - Permanently pinned at the bottom of the viewport across all pages
+        - Remains visible during scrolling with z-index priority
+        - Contains main navigation tabs:
+            * Calendar - Navigate to home page calendar view (default selection)
+            * Students - Navigate to home page students view
+            * Tasks - Navigate to home page tasks view (overdue sessions)
+            * Settings - Navigate to home page settings view
+        - Active tab indication with green highlighting (bg-green-100, text-green-700)
+        - Only the selected tab is highlighted, others remain unhighlighted
+        - Mobile-optimized design with touch-friendly interface
+        - Height: 88px (accounted for in page layouts with bottom padding)
+        - Enhanced UI with rounded corners, shadows, and smooth transitions
+        - ✅ UPDATED: Moved from top to bottom for better mobile UX
+        - ✅ UPDATED: Calendar tab selected by default on app load
+        - ✅ UPDATED: Green highlighting for active tab with improved visual feedback
+        
+    ✅ IMPLEMENTED: Mobile-Friendly Entity Page Headers (Entity Pages Only)
+        - Sticky header positioned at the top of entity pages
+        - Automatically shown on:
+            * Student View pages (/students/:id)
+            * Student Edit pages (/students/:id/edit)
+            * Student New pages (/students/new)
+            * Session View pages (/sessions/:id)
+            * Session Edit pages (/sessions/:id/edit)
+            * Session New pages (/sessions/new)
+        - Contains:
+            * [← Back] button (left side) - Smart navigation with fallback routing
+            * Optional action buttons (right side) - Context-specific actions like Edit/Save
+        - Mobile-optimized design with touch-friendly interface
+        - Sticky positioning for easy access during scrolling
+        - ✅ UPDATED: Simplified design for better mobile UX
+        - ✅ FIXED: Top bar positioning and alignment issues
+            * Fixed ContextualBar to be positioned at top-0 (frozen at top of screen)
+            * Corrected padding calculations for proper content spacing (pt-[48px])
+            * Ensured proper alignment with page edges on both mobile and desktop
+            * Maintained smooth scrolling for content beneath the frozen top bar
+        
+    Navigation Behavior:
+        ✅ IMPLEMENTED: URL-based view switching on home page
+            - Home page accepts ?view=calendar|students|tasks|settings parameter
+            - Top bar navigation uses URL parameters for view switching
+            - Browser back/forward buttons work correctly
+            - Deep linking to specific views supported
+            
+        ✅ IMPLEMENTED: Smart routing and fallback navigation
+            - Back button uses browser history when available
+            - Falls back to appropriate listing page when no history exists
+            - Student pages fallback: /?view=students
+            - Session pages fallback: /?view=calendar
+            - Prevents navigation dead-ends
+            
+        ✅ IMPLEMENTED: Layout spacing and scroll behavior
+            - Root layout includes bottom padding (pb-[88px]) for Fixed Bottom Navigation
+            - Entity pages use sticky headers for easy access
+            - Content scrolls smoothly under fixed bottom navigation
+            - Bottom navigation remains visible during scroll
+            - No content overlap with fixed navigation elements
+            - ✅ UPDATED: Mobile-optimized layout with bottom navigation
+            - ✅ UPDATED: Enhanced padding to accommodate improved navigation design
+            
+    Benefits:
+        - Consistent access to main navigation from any page
+        - Clear page context and easy navigation on entity pages
+        - Improved usability with always-visible bottom navigation
+        - Better orientation for users navigating deep page structures
+        - Mobile-first responsive design optimized for touch interfaces
+        - Maintains accessibility standards
+        - ✅ UPDATED: Enhanced mobile UX with bottom navigation placement
+
+Session Creation & Calendar Functionality:
+    Each calendar day should have the option to input a session by selecting the timeslot on the calendar, similar to Google Calendar functionality.
+    Students can be selected as attendees of this session. Multiple students per session are possible.
+    Multiple sessions per day can be added.
+    Session start and end time should be selectable (like Google Calendar).
+    Each session should have tags/goals that can be assigned.
+    ✅ NEW: Session Type field with two options:
+        - "Private" = counts as 2 sessions (affects balance calculation)
+        - "Team" = counts as 1 session (standard balance calculation)
+
+✅ IMPLEMENTED: Calendar Day View:
+    A dedicated day view page that displays a detailed timeline for a selected date, similar to Google Calendar's day layout.
+    
+    Route Structure:
+        - Route: /calendar/day/:date
+        - Date parameter format: YYYY-MM-DD (ISO format)
+        - Example: /calendar/day/2025-10-14
+    
+    Access & Navigation:
+        - Clicking on any date in the main Calendar view navigates to the Day View for that date
+        - Day View is the primary method for viewing and managing sessions for a specific date
+        - Back button returns to main Calendar view
+    
+    Header Section:
+        - Date display: Full format (e.g., "Monday, October 14, 2025")
+        - [← Back to Calendar] button positioned on the left side of the day description
+        - [+ Add Session] button with prepopulated date and current time (rounded to nearest 30-min slot)
+        - Fixed header positioned at the top of the screen (frozen while scrolling)
+        - ✅ UPDATED: Top bar layout improvements
+            * Fixed header positioning to be at the very top of the screen (top-0)
+            * Back button positioned on the left side of the day description for better UX
+            * Proper content spacing with pt-[320px] to account for fixed header
+            * Responsive design maintained for both mobile and desktop views
+            * Header remains frozen while scrolling the rest of the page content
+            * ✅ UPDATED: Simplified header design
+                - Removed "x sessions scheduled" text for cleaner, more focused display
+                - Date and time remain prominently displayed in center
+                - Maintained proper alignment and spacing of remaining elements
+                - ✅ UPDATED: Consistent spacing improvements
+                    - Added consistent spacing (mt-4) between date and first widget row
+                    - Spacing matches the gap between widgets themselves (gap-4)
+                    - Ensures uniform visual rhythm throughout the top bar
+                    - Maintains proper alignment and responsiveness on all screen sizes
+                    - ✅ UPDATED: Widget and timeline spacing alignment
+                        - Added consistent spacing (mt-4) between widgets and timeline card
+                        - Spacing between dividing strip and timeline matches widget spacing (gap-4)
+                        - Creates uniform visual rhythm from widgets through to timeline
+                        - Maintains consistent spacing throughout the entire top section
+    
+    Day Summary Statistics:
+        - Total Sessions: Count of all sessions for the day
+        - Scheduled Sessions: Count of sessions with "scheduled" status (displayed in grey)
+        - Completed Sessions: Count of sessions with "completed" status (displayed in green)
+        - Unique Students: Count of unique students with sessions that day
+        - All statistics displayed in card format with icons
+        - Widgets: Display Total Sessions, Scheduled (grey), Completed (green), and Canceled (red)
+    
+    Timeline Layout:
+        - Full-day timeline with 30-minute intervals from 06:00 to 22:00
+        - Each time slot clearly labeled and separated
+        - Hour marks (e.g., 09:00, 10:00) have bold borders for visual clarity
+        - Empty time slots display "Click to add session" on hover
+        - Clicking empty time slots opens Session Create page with prepopulated date and time
+        - ✅ UPDATED: Timeline display improvements
+            * Fixed timeline positioning to avoid going under the frozen top bar (pt-[320px])
+            * Enhanced time slot visibility with improved styling and hover effects
+            * Hour marks have enhanced visual distinction with stronger borders and background
+            * Improved clickable areas with better hover states and rounded corners
+            * Added overflow handling for smooth scrolling behavior
+            * Maintained proper spacing and alignment across mobile and desktop views
+            * All timeslots displayed vertically in proper chronological order
+    
+    Session Display:
+        - Sessions displayed as single blocks spanning from start to end (no per-30min splitting)
+        - Multi-slot sessions visually cover their entire duration across the timeline
+        - Color-coded by status:
+            * Grey - Scheduled sessions
+            * Green - Completed sessions
+            * Red - Cancelled sessions (with strikethrough)
+        - Each session card displays:
+            * Status icon (Clock for scheduled, CheckCircle for completed, XCircle for cancelled)
+            * Time range (e.g., "09:00 - 10:00")
+            * Session type (Team/Individual)
+            * Number of attendees
+            * List of student names (truncated if necessary)
+            * Status badge
+        - Mobile layout specifics:
+            * Status badge is aligned on the same row as the time, right-aligned
+            * Status badge includes the corresponding status icon before the text
+        - Hover effect on session cards for better interactivity
+        - Clicking on a session navigates to Session Details page with returnTo parameter
+    
+    Session Creation Flow:
+        - Clicking on any empty time slot opens /sessions/new with:
+            * date parameter: Selected date (YYYY-MM-DD)
+            * time parameter: Selected time slot (HH:MM)
+        - Session Create page automatically prepopulates these values
+        - User can modify all session details before saving
+    
+    Navigation Flow:
+        - Calendar View → Day View (click on date)
+        - Day View → Calendar View (Back button)
+        - Day View → Session Create (click time slot or Add Session button)
+        - Day View → Session Details (click session, with returnTo=/calendar/day/:date)
+        - Session Details → Day View (Back button, using returnTo parameter)
+        - Session Edit → Session Details → Day View (maintains navigation context)
+    
+    Responsive Design:
+        - Mobile-optimized layout with touch-friendly time slots
+        - Responsive summary cards (2 columns on mobile, 4 on desktop)
+        - Smooth scrolling through timeline
+        - Sticky header remains accessible on all screen sizes
+    
+    Performance Optimizations:
+        - Efficient rendering for days with many sessions
+        - Real-time data loading from localStorage
+        - Automatic refresh when navigating back from session operations
+        - Smart session overlap detection and display
+    
+    Visual Consistency:
+        - Follows existing application design system
+        - Uses established color scheme for status indicators
+        - Consistent card styling with other views
+        - Proper use of spacing and typography
+    
+    Benefits:
+        - Quick overview of daily schedule
+        - Easy session creation at specific times
+        - Clear visual representation of session distribution
+        - Efficient navigation between calendar views
+        - Better time management and scheduling decisions
+
+Student Balance Tracking:
+    I want to track each student's balance. 
+    This balance will be based on the number of sessions and the price per session for that moment in time. 
+    The price per session should be customizable and as a global parameter which can be selected when inputting a student's balance. 
+    The user should be able to fill in the balance in each session, but this is optional. 
+    Also, the balance can be negative, meaning that if I don't enter a value in the balance, after I submit the session to be "closed", the students without a balance entered will be automatically deducted the default session price value for that particular time.
+    The balance value should be represented as the number of sessions rather than currency.
+    ✅ UPDATED: Balance display shows only numeric values (integer) without currency symbols. 
+
+✅ IMPLEMENTED: Default Charge Settings
+    A comprehensive settings system that allows instructors to configure default session charges for different session types.
+    
+    Settings Tab:
+        - Settings tab accessible via bottom navigation bar
+        - Positioned as the rightmost tab in the navigation
+        - Uses Settings icon for clear visual identification
+        - Follows same navigation pattern as other tabs with URL parameter support
+        
+    Default Charge Configuration:
+        - ✅ IMPLEMENTED: Default Charge Settings Card
+            - Card title: "Default Charge Settings"
+            - Description: "Set the default number of sessions to charge for different session types."
+            - Two configurable fields:
+                * Team Sessions (sessions) - Default value: 1 session
+                * Individual Sessions (sessions) - Default value: 2 sessions
+            - Numeric input validation with minimum value of 1
+            - Clear labeling and user-friendly interface
+            - Real-time validation with error messages for invalid inputs
+        
+        - ✅ IMPLEMENTED: Session Goals/Tags Management
+            - Maintains existing goals/tags functionality
+            - Add, edit, and remove session goals
+            - Goals available for assignment to sessions and students
+            - Clean interface with tag-based display
+        
+        - ✅ REMOVED: Default Session Price Setting
+            - Completely removed the old "Default Session Price" setting
+            - Replaced with session-type-specific charge settings
+            - Maintains backward compatibility with existing data
+        
+    Technical Implementation:
+        - Settings stored in localStorage with AppSettings interface
+        - Real-time validation for numeric inputs
+        - Automatic fallback to default values (Team: 1, Individual: 2)
+        - Settings applied automatically to new session creation
+        - Session completion logic uses appropriate default charges based on session type
+        
+    User Experience:
+        - Clear, intuitive interface for setting default charges
+        - Immediate validation feedback for invalid inputs
+        - Consistent styling with rest of application
+        - Mobile-optimized responsive design
+        - Save confirmation with success message
+        
+    Benefits:
+        - Flexible configuration for different session types
+        - Simplified session creation with appropriate defaults
+        - Clear separation between team and individual session charges
+        - Improved user experience with type-specific settings
+        - Maintains data consistency across all session operations
+        - ✅ IMPLEMENTED: Default Charge Application on Session Completion
+            - Default charges are applied automatically when sessions are completed
+            - Session completion dialog shows correct charges based on settings
+            - Session details pages display charges using current settings
+            - All session-related UI components use settings-based charges
+            - Removed old price-based system completely
+
+Session Goals/Tags:
+    Add tags for session goals. This multi-select dropdown should be available for each student's profile. 
+    Also, display this value for each session, like a fun and quirky stat.
+
+Session Information:
+    I would like to view basic session information for each student.
+
+Student Record Management:
+    ✅ IMPLEMENTED: Entity Page Structure Standardization
+        - Each student record has dedicated pages for Create, Details (View), and Update (Edit) operations
+        - Consistent routing structure matching Session entity pattern
+        - Automatic data refresh after record creation or update
+        - Clear navigation paths between pages
+    
+    Student Entity Pages:
+        ✅ IMPLEMENTED: New Student Create Page
+            - Route: /students/new
+            - Used for adding a new student record
+            - Includes all personal information fields, goals, description, and initial balance
+            - Navigates to Student Details page after successful creation
+            - ✅ ENHANCED: Initial Balance Field Behavior (January 2025)
+                - Field defaults to 0 and displays "0" as placeholder
+                - When user clicks on field, the "0" value is automatically cleared for easy input
+                - If user leaves field empty and saves, balance is saved as 0
+                - Maintains numeric validation and proper input handling
+                - Works consistently across both mobile and desktop views
+        
+        ✅ IMPLEMENTED: Student Details Page (Full Page View)
+            - Route: /students/:id
+            - Full page layout (no modal overlay)
+            - Displays comprehensive student profile information:
+                * Personal information (name, phone, weight, height, age, birthday, member since)
+                * Current balance and balance transaction history
+                * Session history table with streamlined columns (Date & Time, Session Type, Status)
+                * Goals/tags associated with the student
+                * Notes system with full CRUD operations
+                * Description field
+            - Read-only view with Edit button for modifications
+            - ✅ IMPLEMENTED: Delete button positioned on the left side of the Edit button in the top bar
+            - ✅ IMPLEMENTED: Delete functionality with confirmation dialog before proceeding
+            - ✅ IMPLEMENTED: Deleting a student removes all associated records (Notes, Balance Transactions, Session History, etc.)
+            - Session history entries are clickable and navigate to session details
+            - Detailed session information (attendees, balance adjustments, goals) accessible via Session Details dialog
+            - Automatic data refresh when navigating back from edit operations
+        
+        ✅ IMPLEMENTED: Student Update Page
+            - Route: /students/:id/edit
+            - Allows editing of all student information:
+                * Personal information fields
+                * Goals & focus areas
+                * Description
+                * Notes management (add, edit, delete)
+                * Balance adjustments via transaction system
+            - After saving, navigates back to Student Details page with refreshed data
+            - Cancel button returns to Student Details page without saving
+            - Inline note editing with confirmation dialogs
+    
+    Navigation Flow:
+        - Student list view → Student Details page (click on student card)
+        - Student Details page → Student Update page (Edit button)
+        - Student Update page → Student Details page (Save or Cancel)
+        - Student Details page → Session Details page (click on session in history)
+        - Session Details page → Student Details page (click on attendee)
+
+Notes Management System:
+    ✅ IMPLEMENTED: Complete CRUD operations across all student views
+        - Student Details Page (View Mode):
+            * [+ Add a Note] button at the top of Notes section
+            * [Edit] button visible on each note for quick editing
+            * [Delete] button visible on each note with confirmation
+            * Modal opens for creating new notes with multiline text area
+            * Inline editing mode activates when Edit is clicked
+            * Save/Cancel buttons for inline editing
+            * Automatic UI refresh after any operation
+        - Student Edit Page:
+            * Full note management with Add/Edit/Delete functionality
+            * Consistent UI and behavior with Details page
+        - Student List View Cards:
+            * Preview of latest notes on each student card
+            * Hover-activated Edit/Delete buttons on note previews
+        - All Views:
+            * No manual page reload required after any note operation
+            * Real-time synchronization across all components
+            * Created and updated timestamps displayed
+            * Text truncation for long notes with "click to view" indicator
+            * Full note content viewable in dedicated Note Details modal
+            * Confirmation dialogs for all destructive operations
+            * Loading states during save/delete operations
+
+Student Listing Page:
+    ✅ IMPLEMENTED: Display all student records in a card-based format optimized for mobile devices
+    ✅ IMPLEMENTED: Real-time search functionality with instant filtering
+    ✅ IMPLEMENTED: Responsive grid layout following best UI/UX practices for mobile devices
+    ✅ IMPLEMENTED: Simplified student information display with essential fields only
+        - Name, Phone, and Current Balance only
+        - Removed Age, Goals count, and Notes count for cleaner display
+        - Maintained user avatar icon for visual consistency
+    ✅ IMPLEMENTED: Updated balance color coding for better user experience
+        - Positive balance displayed in green (student has credit)
+        - Negative balance displayed in red (student owes sessions)
+        - Zero balance displayed in green (neutral/paid up)
+    ✅ IMPLEMENTED: Each record allows drilling down to view complete student details when clicked
+    ✅ IMPLEMENTED: Loading states and error handling with user-friendly messages
+    ✅ IMPLEMENTED: Frozen Header Layout for Mobile Optimization
+        - Sticky header that remains visible while scrolling using `sticky top-0 z-50`
+        - Fixed "Students" title, [+Create New] button, and search field at the top
+        - Scrollable student list below the frozen header with natural document flow
+        - Smooth scrolling with proper alignment of frozen elements
+        - Search functionality filters by name, phone, goals, and notes
+        - "No students found" state with clear search option
+        - Responsive design optimized for all mobile screen sizes
+        - Enhanced mobile user experience with always-accessible controls
+        - Uses StudentsView component with proper sticky positioning and z-index layering
+        - ✅ FIXED: Students List Display Issues (January 2025)
+            - Removed hover zoom/scaling effects on student cards for cleaner UI
+            - Restored proper list sizing to fit screen properly on all devices
+            - Maintained responsive grid layout (1 column mobile, 2 columns medium, 3 columns large)
+            - Ensured clean, consistent layout without breaking UI functionality
+            - Preserved hover shadow effects for visual feedback without scaling
+        - ✅ UPDATED: Students List to Simple Clean Format (January 2025)
+            - Converted card-based layout to simple list format for cleaner display
+            - Removed complex card components and expanded content for streamlined view
+            - Implemented clean list items with proper alignment and spacing
+            - Maintained frozen header elements (title, add button, search field)
+            - Ensured proper screen width utilization with responsive design
+            - Preserved all essential student information in compact format
+            - Added subtle hover effects for better user interaction
+            - Maintained balance display with color coding in badge format
+        - ✅ UPDATED: Simplified Student Information Display (January 2025)
+            - Streamlined student listing to show only Name, Phone, and Current Balance
+            - Removed Age, Goals count, and Notes count for cleaner, focused display
+            - Updated color coding: Green for positive/zero balance, Red for negative balance
+            - Maintained responsive layout and clean alignment across all screen sizes
+            - Preserved all essential functionality while improving visual clarity
+        - ✅ UPDATED: Button Text Standardization (January 2025)
+            - Changed "[+Add Student]" button text to "[+Create New]" for consistency
+            - Updated button text across all instances (header, empty state, error state)
+            - Maintained same styling, positioning, and functionality
+            - Improved user experience with more descriptive action label
+        - ✅ UPDATED: Full Page Student Creation (January 2025)
+            - [+Create New] button now navigates to full page form (/students/new) instead of modal dialog
+            - Full page form displays all required student fields with proper responsive design
+            - Form allows input of all student details and saves new student record
+            - Maintains consistent UI and proper alignment for button on all screen sizes
+            - Responsive design optimized for both mobile and desktop views
+            - Proper navigation back to students list after successful creation
+
+Student Record Page:
+    ✅ IMPLEMENTED: Human body parameters: weight, height, and age with proper input validation
+    ✅ IMPLEMENTED: Free text field for general initial student description
+    ✅ ENHANCED: Description field layout and responsiveness improvements:
+        - Fixed description field to fit within its frame and not exceed page boundaries
+        - Added scrollable container with max-height constraint (200px) for long descriptions
+        - Implemented proper text wrapping and word breaking for long text content
+        - Enhanced responsive design for both mobile and desktop views
+        - Added visual styling with border and background for better content separation
+        - Preserved line breaks and text formatting in description display
+    ✅ IMPLEMENTED: Comprehensive notes system with full CRUD operations:
+        - Each note is a separate object with timestamp
+        - Notes displayed in chronological list (newest first)
+        - Real-time add/edit/delete functionality with confirmation dialogs
+        - Inline editing with save/cancel options
+        - Visual loading states during operations
+        - Automatic UI updates without manual refresh
+        - ✅ UPDATED: Simplified note creation with single input field only
+        - ✅ UPDATED: User-entered note content used as note name (no automatic date stamps)
+        - ✅ UPDATED: Duplicate note name validation with warning dialog
+        - ✅ UPDATED: Option to update note name when duplicates are detected
+        - ✅ ENHANCED: Display created and updated dates for each note
+        - ✅ ENHANCED: Text truncation for long notes with ellipsis indicator
+        - ✅ ENHANCED: Clickable notes to open full content in modal view
+        - ✅ ENHANCED: Clean note names without date stamps after updates
+        - ✅ UPDATED: Removed note name display - only note content is shown
+        - ✅ UPDATED: Improved long text handling to fit within note object frame
+        - ✅ UPDATED: Enhanced responsive design for note containers
+        - ✅ ENHANCED: Full note content display with scrollable container in Note Details page
+        - ✅ ENHANCED: Smooth scrolling for long notes without layout overflow
+        - ✅ ENHANCED: Larger multi-line content field for better readability
+        - ✅ ENHANCED: Preservation of line breaks and text formatting
+        - ✅ ENHANCED: Improved scrollable content container with better UX
+        - ✅ RESTORED: Full note management on Student Details page (read-only view)
+        - ✅ ENHANCED: Note Details modal window with complete functionality:
+            * Modal window titled "Note Details" with single [X] close button in top-right corner
+            * Note field showing content in read-only mode by default
+            * Created and updated timestamp display
+            * [Delete] button on left bottom corner with confirmation prompt
+            * [Edit] button on right bottom corner for editing functionality
+            * Enhanced confirmation dialog for unsaved changes when closing modal:
+                - "Yes" option closes modal and discards changes
+                - "No" option keeps modal open for further editing
+                - Uses standardized confirmation dialog pattern consistent with other objects
+                - Proper handling of [X] button clicks and outside clicks
+            * Instant UI updates after saving without page refresh
+            * Responsive design for both Mobile and Desktop views
+            * Proper modal sizing, alignment, and scrollable content
+            * [+ Add a Note] button prominently displayed above notes list
+            * [Edit] button on each note for quick inline editing
+            * [Delete] button on each note with confirmation dialog
+        - ✅ ENHANCED: 3-line truncation for notes display with modal view functionality
+            * Notes display only first 3 lines by default for clean, space-efficient view
+            * Click to view full content in modal window for long notes
+            * Maintains responsive design for both mobile and desktop views
+            * Preserves all existing note functionality (edit, delete, view full content)
+        - ✅ FIXED: Note Details modal state management bug
+            * Fixed issue where closing modal with "Yes, Close" option broke ability to open other notes
+            * Improved modal state cleanup to ensure proper reset after closing with unsaved changes
+            * Enhanced useEffect hooks to automatically reset dialog state when modal is closed
+            * Ensured all notes remain accessible after closing modal regardless of unsaved changes
+            * Maintained smooth functionality on both Mobile and Desktop views
+        - ✅ FIXED: Note Details modal delete confirmation bug
+            * Fixed issue where clicking [Cancel] or [X] on delete confirmation closed the Note Details modal
+            * Enhanced ConfirmationDialog component to properly handle cancel actions without affecting parent modal
+            * Updated NoteDetailsDialog to maintain modal state when delete operation is cancelled
+            * Ensured Note Details modal remains open when user cancels delete confirmation
+            * Prevented unwanted navigation or scrolling back to Student Details page when deletion is cancelled
+            * Maintained proper modal state and alignment for all elements on both Mobile and Desktop views
+        - ✅ FIXED: Development server console errors and 404 issues
+            * Resolved port 3000 conflict by properly managing Next.js development server processes
+            * Fixed Content Security Policy issues by adding proper security headers to Next.js configuration
+            * Resolved missing static assets (CSS, JS, fonts) by clearing and regenerating .next build directory
+            * Enhanced Next.js configuration with security headers including CSP, X-Frame-Options, and X-Content-Type-Options
+            * Ensured all student routes and static assets are properly served on localhost:3000
+        - ✅ UPDATED: Notes listing interface cleanup
+            * Removed Edit and Delete buttons from Notes listing page for cleaner interface
+            * Moved Edit and Delete functionality to individual Note detail modal
+            * Notes listing now shows only content preview and timestamps
+            * Edit and Delete operations available in Note Details modal with full functionality
+            * Modal-based note creation with multiline text support
+            * Inline note editing with save/cancel functionality
+            * Automatic refresh after create/edit/delete operations
+            * No manual page reload required for any note operations
+    ✅ IMPLEMENTED: User created field with date picker component
+    ✅ IMPLEMENTED: Automatic calculation and display of total years + months since creation
+    ✅ IMPLEMENTED: Birthday date field with date picker
+    ✅ IMPLEMENTED: Email field removed from student record
+    ✅ IMPLEMENTED: Real-time synchronization between main view and detail view
+    ✅ IMPLEMENTED: Advanced state management with custom React hooks
+    ✅ IMPLEMENTED: Error handling and loading states throughout
+    ✅ NEW: Fixed header on Student Details page (sticky header with Student Name, Edit button, and Close button)
+    ✅ NEW: Modal close confirmation when unsaved changes are detected
+    ✅ ENHANCED: Auto-refresh after save - Student Detail page automatically updates to display current data after editing Personal Information, Description, Goals & Focus Areas, or Notes
+    ✅ ENHANCED: Real-time data synchronization - No manual page reload required after saving edits
+    ✅ ENHANCED: Force refresh mechanism - Student Detail page always displays the most up-to-date data after any changes
+    ✅ ENHANCED: Complete data refresh - All sections (Personal Information, Description, Goals & Focus Areas, Notes, Balance, Sessions) automatically update with latest backend data
+    ✅ ENHANCED: Student context preservation - Student Detail page remains on the same student record after updates, maintaining user's current view
+    ✅ ENHANCED: Context-aware data refresh - System preserves student ID and unique identifier during data updates to prevent navigation away from current student
+    ✅ ENHANCED: Modal auto-refresh - Student modal windows automatically refresh with latest data after any save operation
+    ✅ ENHANCED: Visual refresh indicators - Modal shows refreshing status during data updates for better user experience
+    ✅ FIXED: Personal Information section auto-refresh - All Personal Information fields now display updated data immediately after save
+    ✅ FIXED: Description and Goals sections auto-refresh - Description and Goals sections now use currentStudent data for immediate updates
+
+    ✅ NEW: Enhanced Student Detail Page with Advanced Field Management:
+        - Current Balance (Sessions) field updated to numeric type with positive/negative validation
+        - Removed currency symbols ($) from balance display - shows only numeric values
+        - Age field enhanced to display in "years and months" format (e.g., "35 years and 3 months")
+        - Member Since field added to track student registration date
+        - Member Since Age calculated field showing membership duration in years and months
+        - Balance Transaction History table with pagination (4 transactions per page)
+        - Session History table updated with pagination (4 sessions per page)
+        - Auto-refresh functionality after balance changes
+        - Data consistency maintained across all sections
+        - ✅ UPDATED: Section Display Order - Reorganized layout with proper sequence:
+            1. Personal Information
+            2. Description
+            3. Notes
+            4. Goals & Focus Areas
+            5. Balance Transaction History
+            6. Session History
+        - ✅ UPDATED: Notes Section Enhancement - Improved user experience with modal-based note creation:
+            - Notes section positioned immediately below Description section
+            - Removed inline add-note input field and small [+] button
+            - Added new "[+ Add New Note]" button with consistent UI styling
+            - Modal-based note creation using existing Note Details modal design
+            - Multiline text area with text wrapping support
+            - Save/Cancel functionality with automatic refresh after note creation
+        - ✅ UPDATED: Balance Transaction History icon changed from "$" to neutral wallet icon
+        - ✅ UPDATED: Visual consistency maintained across all section headers
+
+    ✅ NEW: Balance Transaction History System:
+        - Balance Transaction History table displays all balance changes
+        - Table columns: Date & Time, Transaction Type (Added/Deducted), Change Amount (+/-), Reason/Description, Updated Balance After Transaction
+        - ✅ UPDATED: Section title displays dynamic record count in parentheses (e.g., "Balance Transaction History (8)")
+        - Pagination with 4 most recent transactions per page
+        - ✅ UPDATED: Pagination button labels simplified for better clarity:
+            - "Previous" button changed to "←"
+            - "Next" button changed to "→"
+            - Maintains consistent styling and responsiveness across mobile and desktop views
+        - ✅ UPDATED: Pagination layout optimized for better space utilization:
+            - Removed record range text (e.g., "Showing 1 to 4 of X transactions")
+            - Centered pagination controls for improved visual balance
+            - Maintains full functionality with cleaner, more focused interface
+        - Sorting by Date & Time (descending by default)
+        - Automatic updates after every balance change
+        - Real-time data synchronization with student balance changes
+        - ✅ UPDATED: Section icon changed from "$" to neutral wallet icon for better visual consistency
+        - ✅ UPDATED: Section positioned after Goals & Focus Areas in the page layout
+        - ✅ UPDATED: Enhanced visual indicators for better readability:
+            - Transaction Type badges: "Added" transactions display in green (bg-green-50, text-green-700), "Deducted" transactions display in red (bg-red-50, text-red-700)
+            - Change Amount values: Positive amounts display in green (text-green-600), negative amounts display in red (text-red-600)
+            - ✅ NEW: Updated Balance color coding: Positive balances display in green (text-green-600), zero balances display in grey (text-gray-600), negative balances display in red (text-red-600)
+            - Maintains responsive design with horizontal scrolling on mobile devices
+            - Ensures proper alignment and readability across all screen sizes
+        - ✅ NEW: Transaction Details Modal:
+            - Clickable transaction rows in Balance Transaction History table
+            - Modal displays comprehensive transaction information:
+                * Date and time with proper formatting
+                * Transaction type with visual indicators (Added/Deducted)
+                * Change amount with color-coded values (green for positive, red for negative)
+                * Reason/description with proper text wrapping
+                * Updated balance after transaction with color coding (green for positive, grey for zero, red for negative)
+                * Transaction ID for reference
+            - Consistent wallet icon usage throughout modal (replaces dollar sign symbols)
+            - Responsive design optimized for both mobile and desktop views
+            - Maintains existing color logic and formatting standards
+            - Close button for easy modal dismissal
+        - ✅ UPDATED: Balance Transaction History Table Layout:
+            - Simplified table structure with cleaner, more focused layout
+            - Removed "Transaction Type" and "Reason/Description" columns from main table
+            - Table now displays only essential information: Date & Time, Change Amount, Updated Balance
+            - Full transaction details remain accessible via Transaction Details modal
+            - Improved readability and reduced visual clutter
+            - Maintains clickable rows for accessing detailed transaction information
+            - Responsive design preserved across mobile and desktop views
+
+Session Logging & History:
+    ✅ IMPLEMENTED: Comprehensive session log maintained for each student
+    ✅ IMPLEMENTED: Session log includes:
+        - Date and time of each session with proper formatting
+        - Session goals/tags for that specific session
+        - Balance changes (payments/deductions) for that session
+        - Session status (completed, cancelled, etc.)
+        - Ability to view and edit past session details
+        - ✅ NEW: Session Type field (Private/Team) affecting balance calculation
+    ✅ IMPLEMENTED: Chronologically ordered (newest first) with automatic sorting
+    ✅ IMPLEMENTED: Real-time updates when sessions are added/modified
+    ✅ IMPLEMENTED: Each log entry is clickable to view full session details
+    ✅ IMPLEMENTED: Navigation to Session Details page with complete session information
+    ✅ IMPLEMENTED: Session Details page displays all relevant information:
+        - Date and time with proper formatting
+        - Student(s) involved in the session
+        - Session type (Private/Team) with session count
+        - Balance adjustments and payment information
+        - Tags/Goals associated with the session
+        - Session status with visual indicators
+        - Session notes and additional details
+    ✅ IMPLEMENTED: Loading states and error handling for session data
+    ✅ IMPLEMENTED: Cross-component synchronization for session updates
+    ✅ NEW: Session History Table View:
+        - Display Session History section in structured table format
+        - ✅ UPDATED: Section title displays dynamic record count in parentheses (e.g., "Session History (12)")
+        - Table columns include:
+            * Date & Time (formatted date and time range)
+            * Student(s) Attended (list of student names)
+            * Session Type (Private/Team with session count)
+            * Balance Adjustments (payment/deduction amounts)
+            * Tags/Goals (session goals and tags)
+            * Status (Completed, Cancelled, Scheduled with visual indicators)
+        - Sorting functionality for all columns (ascending/descending)
+        - Maintains existing click-to-view session details functionality
+        - Preserves all session information and real-time updates
+        - Responsive table design for mobile and desktop
+        - Seamless integration with existing UI components
+        - ✅ NEW: Session History Pagination:
+            - Display only the last 4 sessions on the first page
+            - Pagination controls to view older sessions (5 per page or customizable)
+            - Smooth pagination navigation with preserved sorting/filtering
+            - Real-time updates when new sessions are added
+            - ✅ UPDATED: Pagination button labels simplified for better clarity:
+                - "Previous" button changed to "←"
+                - "Next" button changed to "→"
+                - Maintains consistent styling and responsiveness across mobile and desktop views
+            - ✅ UPDATED: Pagination layout optimized for better space utilization:
+                - Removed record range text (e.g., "Showing 1 to 4 of X sessions")
+                - Centered pagination controls for improved visual balance
+                - Maintains full functionality with cleaner, more focused interface
+
+Session Management & Navigation:
+    ✅ IMPLEMENTED: Entity Page Structure Standardization
+        - Each entity (Session and Student) has dedicated pages for Create, Details (View), and Update (Edit) operations
+        - Consistent routing structure across all entities
+        - Automatic data refresh after record creation or update
+        - Clear navigation paths between pages
+        
+    Session Entity Pages:
+        ✅ IMPLEMENTED: New Session Create Page
+            - Route: /sessions/new
+            - Used for creating new session records
+            - ✅ UPDATED: Top bar layout improvements (January 2025)
+                - Title changed from "Session — New" to "New Session" and centered
+                - "Create Session" button renamed to "Create" and moved to right side
+                - Cancel button removed from page for cleaner UX
+                - Layout now matches New Student page design pattern
+            - Includes all relevant input fields and validation
+            - Navigates to Session Details page after successful creation
+        
+        ✅ IMPLEMENTED: Session Details Page
+            - Route: /sessions/:id
+            - ✅ UPDATED: Cancelled session status styling (January 2025)
+                - Cancelled status badge now displays in red (bg-red-100 text-red-700)
+                - Improved visual distinction for cancelled sessions
+            - Used for viewing detailed session information
+            - Displays all session fields, attendees, goals, notes, and session type
+            - Attendee rows are clickable and navigate to student details pages
+            - Edit button navigates to Session Update page
+            - ✅ IMPLEMENTED: Delete button positioned on the left side of the Edit button in the top bar
+            - ✅ IMPLEMENTED: Delete functionality with confirmation dialog before proceeding
+            - ✅ IMPLEMENTED: Deleting a session removes all associated records (attendances, tags/goals, balance adjustments, etc.)
+            - ✅ IMPLEMENTED: Delete button is hidden for sessions in the "Complete" stage
+            - Automatic data refresh when navigating back from edit operations
+            - ✅ NEW: Cancel Session functionality:
+                * [Cancel Session] button visible at bottom of page for scheduled sessions
+                * Orange button styling (bg-orange-500 hover:bg-orange-600) to indicate caution without implying deletion
+                * Positioned next to [Complete Session] button in action button row
+                * Only visible when session status is "scheduled"
+                * Confirmation dialog appears when clicked with message:
+                  "Are you sure you want to cancel this session? This action will mark the session as canceled without affecting student balances."
+                * Two dialog options:
+                  - [Confirm] - Proceeds with cancellation
+                  - [No] - Dismisses dialog and returns to Session Details page
+                * Upon confirmation:
+                  - Session status updated to "Canceled"
+                  - Student balances remain unchanged (no deductions)
+                  - Session Details page automatically refreshes to show updated status
+                  - Canceled status reflected in:
+                    → Calendar view (marked with gray background and strike-through)
+                    → Session History for all attendees
+                * If not confirmed:
+                  - Dialog closes with no changes
+                  - User remains on Session Details page
+                * Canceled sessions remain visible in all logs for traceability
+                * Sessions marked as "Canceled" cannot be edited or completed
+            - ✅ NEW: Complete Session functionality:
+                * [Complete Session] button visible at bottom of page for scheduled sessions
+                * Blue button styling (bg-blue-600 hover:bg-blue-700) to indicate confirmation or positive action
+                * Positioned next to [Cancel Session] button in action button row
+                * Only visible when session status is "scheduled"
+                * Opens interactive confirmation dialog when clicked with the following features:
+                  - Display current planned attendees with checkboxes (checked by default)
+                  - Option to uncheck students who did not attend
+                  - Display each student's current balance and projected balance after session
+                  - [Add Student (Not Planned)] button to add additional attendees:
+                    → Opens modal with two modes: "Select Existing" and "Create New"
+                    → "Select Existing" mode shows searchable list of all students not currently in session
+                    → "Create New" mode provides full student creation form with all student fields
+                    → Added students appear in separate "Added Attendees (Not Planned)" section with green highlighting
+                    → Students are added to session attendee list immediately and dialog closes automatically
+                    → User remains on Complete Session page and can continue completing the session
+                    → Responsive design works on both mobile and desktop views
+                  - Session type indicator showing deduction amount (Team = 1 session, Individual = 2 sessions)
+                  - Summary section showing total attendees and sessions to deduct
+                  - Two dialog options:
+                    → [Cancel] - Dismisses dialog and returns to Session Details page with no changes
+                    → [Complete Session] - Proceeds with completion (disabled if no attendees selected)
+                * Upon confirmation:
+                  - Session status updated to "Completed" with green badge styling (bg-green-100 text-green-700 border border-green-300)
+                  - Session attendee list updated to reflect confirmed attendees (including added and excluding removed)
+                  - Balance transactions automatically created for each confirmed attendee:
+                    → Team sessions: Deduct 1 session from balance
+                    → Individual sessions: Deduct 2 sessions from balance
+                    → Transaction reason includes session date and type
+                  - All related entities updated:
+                    → Calendar view displays completed sessions with green background
+                    → Student Details pages show updated balances
+                    → Session History for all attendees reflects completed status
+                    → Balance Transaction History for each attendee includes new transaction
+                  - Session Details page automatically refreshes to show:
+                    → Updated "Completed" status badge in green
+                    → Updated attendee list
+                    → Action buttons hidden (Edit/Cancel/Complete no longer available)
+                * If canceled from dialog:
+                  - Dialog closes with no changes
+                  - User remains on Session Details page
+                  - Session remains in "Scheduled" status
+                * Completed sessions:
+                  - Cannot be edited, canceled, or completed again
+                  - Remain visible in all logs and history views
+                  - Display consistent green "Completed" status across all views
+                * Data Consistency:
+                  - All balance deductions logged in Balance Transaction History
+                  - Session history synchronized across all student records
+                  - Real-time updates reflected immediately in all views
+                  - No manual page reload required after completion
+        
+        ✅ IMPLEMENTED: Session Update Page
+            - Route: /sessions/:id/edit
+            - Used for updating existing sessions
+            - ✅ UPDATED: Top bar layout improvements (October 2025)
+                - Title changed from "Session — Edit" to "Edit Session" and centered
+                - "Save Changes" button renamed to "Save" and moved to right side of top bar
+                - Cancel button removed from page for cleaner UX
+                - Layout now matches Edit Student page design pattern
+            - All session fields editable (time, attendees, session type, goals, notes)
+            - After saving, navigates back to Session Details page with refreshed data
+    
+    Functional Requirements:
+        - Attendees list entries are clickable; clicking navigates to Student Details page for that student
+        - System preserves context and refreshes data during navigation without manual reloads
+        - Back button navigation maintains state consistency
+        - All navigation flows use Next.js router for seamless page transitions
+    
+    UI Layout & Interaction Flow:
+        - Session status badge (Scheduled/Completed/Cancelled) displayed prominently
+        - Attendee rows are styled as interactive cards to indicate clickability
+        - Action buttons positioned consistently across all pages
+        - Responsive design optimized for mobile and desktop
+
+Data Editing & Validation:
+    ✅ IMPLEMENTED: Comprehensive validation for all student data fields
+    ✅ IMPLEMENTED: Real-time validation feedback with error messages
+    ✅ IMPLEMENTED: Confirmation dialogs for all destructive operations
+    ✅ UPDATED: Simplified note creation without manual name input
+    ✅ UPDATED: User-entered content used as note name (no automatic date stamps)
+    ✅ UPDATED: Duplicate note name validation with warning dialog and update option
+    ✅ NEW: Modal close confirmation when unsaved changes are detected
+    ✅ NEW: Session Type validation affecting balance calculations
+    ✅ NEW: Balance display validation (integer values only, no currency symbols)
+    
+    ✅ UPDATED: Balance Transaction Management UI Improvements:
+        - Moved "Add Balance Transaction" button from Student Edit page to Student Details page
+        - Positioned directly below "Current Balance (Sessions)" field for better user experience
+        - Made "Current Balance (Sessions)" field read-only on Student Edit page
+        - Balance field now displays as system-managed with explanatory text
+        - Maintains existing balance transaction functionality and dialog
+        - Improved user workflow: View balance details → Add transactions → Edit other student info separately
+        - Enhanced mobile and desktop responsiveness for balance management interface
+
+Technical Implementation Details:
+    ✅ IMPLEMENTED: Custom React hooks (useStudents, useStudent) for state management
+    ✅ IMPLEMENTED: Event-driven architecture with custom events for real-time updates
+    ✅ IMPLEMENTED: localStorage persistence with automatic synchronization
+    ✅ IMPLEMENTED: Confirmation dialogs for all destructive operations
+    ✅ IMPLEMENTED: Optimistic UI updates with fallback error handling
+    ✅ IMPLEMENTED: Performance optimizations to prevent infinite loops
+    ✅ IMPLEMENTED: Responsive design with mobile-first approach
+    ✅ IMPLEMENTED: Accessibility features and keyboard navigation
+    ✅ IMPLEMENTED: Error boundaries and graceful error recovery
+    ✅ IMPLEMENTED: Next.js App Router with page-based routing structure
+    ✅ IMPLEMENTED: Consistent navigation patterns using Next.js router
+    ✅ IMPLEMENTED: Automatic data refresh mechanism after CRUD operations
+    ✅ IMPLEMENTED: Standardized entity page structure (Create, Details, Edit)
+
+Recent Enhancements & Fixes:
+    ✅ FIXED: Infinite loop issue in delete operations (Maximum update depth exceeded)
+    ✅ ENHANCED: Optimized event listeners to prevent unnecessary re-renders
+    ✅ IMPLEMENTED: Confirmation dialogs for delete and update operations on notes
+    ✅ ENHANCED: Real-time UI updates with automatic refresh mechanism
+    ✅ IMPLEMENTED: Visual feedback with loading spinners during operations
+    ✅ ENHANCED: Cross-component synchronization for all student and note operations
+    ✅ IMPLEMENTED: Robust error handling with user-friendly error messages
+    ✅ ENHANCED: Performance optimizations using React refs for stable function references
+    ✅ IMPLEMENTED: Professional confirmation dialogs with destructive action styling
+    ✅ ENHANCED: Notes system with inline editing and real-time updates
+    ✅ IMPLEMENTED: Comprehensive state management with custom hooks
+    ✅ ENHANCED: User experience with immediate visual feedback and loading states
+    ✅ IMPLEMENTED: Global Back Navigation - Consistent [← Back] button across all entity pages
+    ✅ IMPLEMENTED: Smart navigation with fallback routing to prevent dead-ends
+    ✅ IMPLEMENTED: Reusable BackButton component for maintainability and consistency
+
+Entity Structure & Navigation (System Architecture):
+    ✅ IMPLEMENTED: Entity Page Structure Standardization
+        - All entities in the system follow a consistent page structure pattern
+        - Each entity must have three dedicated page types:
+            1. Create Page - For adding new records
+            2. Details (View) Page - For displaying record information
+            3. Update (Edit) Page - For modifying existing records
+        
+    ✅ IMPLEMENTED: Global Back Navigation
+        - All entity pages (Create, Details, Edit) include a [← Back] button
+        - The [← Back] button is consistently positioned in the top-left corner of each page
+        - Button design features:
+            * Left-aligned arrow icon (←) with "Back" text label
+            * Ghost variant styling for minimal visual weight
+            * Small size for compact header layout
+            * Accessible on both desktop and mobile views
+        
+        Navigation Logic:
+            - Primary behavior: Navigate to the previous page in browser history
+            - Fallback behavior: If no navigation history exists, redirect to entity listing page
+            - Smart routing prevents navigation loops and ensures users always have an exit path
+            - Implemented as reusable <BackButton /> component for consistency
+        
+        Fallback Routes by Entity:
+            - Session pages → Default fallback to "/" (home/calendar view) or use returnTo parameter
+            - Student pages → Default fallback to "/?view=students" (Students Listing)
+            - Session Edit page → Fallback to specific session details (/sessions/:id) or use returnTo parameter
+            - Student Edit page → Fallback to specific student details (/students/:id)
+        
+        Technical Implementation:
+            - Uses Next.js router.back() for standard navigation
+            - Checks window.history.length to determine if back navigation is available
+            - Custom BackButton component with configurable fallback routes
+            - Preserves navigation context across all entity pages
+            - Validated in all future deployments
+    
+        ✅ IMPLEMENTED: Enhanced Navigation Logic with Unsaved Changes Detection
+    
+        General Navigation Requirements:
+            - Apply navigation logic consistently across all entities (Students, Sessions, and future entities)
+            - [← Back] button must always navigate user back to the appropriate listing or originating page
+            - If any unsaved data exists on current page, confirmation window appears asking user to confirm navigation
+            - Navigation maintains consistency across all Student and Session related pages
+        
+        Student Entity Navigation:
+            ✅ IMPLEMENTED: Student New Page (/students/new)
+                - Page title: "New Student" (changed from "Create Student")
+                - Cancel button removed from bottom of page
+                - Create button moved to top bar (aligned right of title) and renamed to "Create"
+                - Back button behavior:
+                    * If user entered any information and clicks [← Back] → show confirmation window to discard unsaved changes
+                    * If no data was entered → navigate directly to Students Listing page
+                    * After successful creation and "Student Details" page opens, clicking [← Back] navigates to "Students Listing" (not to "New Student")
+            
+            ✅ IMPLEMENTED: Student Edit and Details Pages
+                - If changes were made but not saved, show confirmation before leaving
+                - If no unsaved changes → navigate back to Students Listing page
+                - Maintain navigation consistency between all Student-related pages
+        
+        Session Entity Navigation:
+            ✅ IMPLEMENTED: Session New Page (/sessions/new)
+                - If user entered any information and clicks [← Back] → show confirmation window to discard unsaved changes
+                - If no data was entered → navigate back to the originating page (e.g., Calendar, Day View) using returnTo parameter
+                - After new Session is successfully created and user redirected to "Session Details" page, if user clicks [← Back], system navigates back to **the page where session creation started** (e.g., Day View, Calendar) using returnTo parameter
+            
+            ✅ IMPLEMENTED: Session Edit and Details Pages
+                - If user made changes and didn't save → show confirmation before leaving
+                - If no unsaved changes → navigate back to the originating page using returnTo parameter (e.g., Calendar, Day View, or Student Details if accessed from there)
+        
+        Technical Implementation:
+            - Custom hasUnsavedChanges() function detects form modifications for each entity type
+            - ConfirmationDialog component for user-friendly confirmation with consistent styling
+            - State management for confirmation dialog visibility across all pages
+            - Consistent styling and responsiveness across desktop and mobile
+            - Smart navigation logic that preserves user's navigation context
+    
+    Navigation Patterns:
+        ✅ IMPLEMENTED: Standardized navigation flow
+            - After record creation → automatically navigate to Details page
+            - After editing → return to updated Details page with refreshed data
+            - Cancel operations → return to previous page without saving
+            - Back button → intelligently returns to previous page with fallback protection
+        
+    Data Refresh Mechanism:
+        ✅ IMPLEMENTED: Automatic data synchronization
+            - All pages automatically load fresh data when navigated to
+            - Edit pages fetch latest data before allowing modifications
+            - Details pages refresh after returning from edit operations
+            - No manual page reload required after any CRUD operation
+        
+    Routing Structure:
+        ✅ IMPLEMENTED: Session Entity Routes
+            - /sessions/new - Create new session
+            - /sessions/:id - View session details
+            - /sessions/:id/edit - Edit existing session
+        
+        ✅ IMPLEMENTED: Student Entity Routes
+            - /students/new - Create new student (Enhanced with unsaved changes protection)
+            - /students/:id - View student details
+            - /students/:id/edit - Edit existing student
+        
+    Implementation Guidelines:
+        - All future entities must follow this same structure
+        - Navigation between pages uses Next.js router for seamless transitions
+        - Component hierarchy should be consistent (e.g., CreateForm, DetailsView, EditForm)
+        - Structure must be reviewed and validated during every deployment
+        - Cross-entity navigation is supported (e.g., Session → Student → Session)
+        - State preservation across navigation is maintained
+        
+    Benefits:
+        - Improved user experience with predictable navigation patterns
+        - Easier maintenance with consistent code structure
+        - Better scalability for adding new entities
+        - Clear separation of concerns between create, view, and edit operations
+        - Prevents structural conflicts after deployment
+
+    ✅ FIXED: Back Navigation Behavior (January 2025)
+        - Student Create flow: After creating a student and viewing Student Details, [← Back] now navigates to Students Listing page
+        - Session Create flow: After creating a session and viewing Session Details, [← Back] now navigates to the originating page (Day View, Calendar) using returnTo parameter
+        - Student Details page: [← Back] button now navigates to Students Listing page instead of using browser history
+        - Session Details page: [← Back] button now uses returnTo parameter to navigate to originating page
+        - Session Create page: [← Back] button now uses returnTo parameter when available
+        - All navigation behavior is consistent and predictable across the system
+
+Deployment & Maintenance:
+    ✅ FIXED: Static Asset Loading Issues - Resolved 404 errors for CSS and JavaScript files
+        - Fixed layout.css loading issues with proper Next.js configuration
+        - Resolved main-app.js, app-pages-internals.js, and page.js 404 errors
+        - Implemented proper static file serving with cache headers
+        - Added deployment verification script for asset health checks
+    ✅ ENHANCED: Next.js Configuration - Optimized for production deployment
+        - Added proper static file handling configuration
+        - Implemented cache headers for static assets (1 year cache with immutable flag)
+        - Configured asset prefix and trailing slash handling
+        - Added CSS optimization for better performance
+    ✅ NEW: Deployment Verification System
+        - Automated post-deployment verification script
+        - Checks all required static assets (CSS, JS, fonts)
+        - Provides detailed success/failure reporting
+        - Includes troubleshooting guidance for failed deployments
+    ✅ NEW: Deployment Scripts and Commands
+        - npm run verify - Check deployment health
+        - npm run deploy:verify - Build and verify deployment
+        - npm run deploy:full - Complete deployment with verification
+        - Automated asset validation before deployment completion
+    ✅ ENHANCED: Build Process and Cache Management
+        - Proper cache clearing procedures for development and production
+        - Optimized build output with correct asset references
+        - Environment-specific configuration for dev/prod deployments
+        - Comprehensive deployment documentation and troubleshooting guide
+    ✅ NEW: Development Server Restart Procedures
+        - npm run dev:restart - Quick restart with cache clearing
+        - npm run dev:clean - Full clean restart for persistent issues
+        - Automated process killing and cache clearing
+        - Prevents 404 errors from stale build files
+    ✅ ENHANCED: Troubleshooting and Recovery
+        - Quick fix procedures for 404 errors
+        - Automated restart scripts for development issues
+        - Step-by-step troubleshooting guide
+        - Verification system for deployment health
+
+✅ FIXED: Calendar Date Selection and Navigation Issues (January 2025)
+    ✅ FIXED: Date Off-by-One Bug - Resolved incorrect date opening issue
+        - Fixed UTC/local date conversion problems in calendar navigation
+        - Implemented consistent local date formatting across all components
+        - Calendar now correctly opens the selected date (e.g., clicking Oct 6 opens Oct 6, not Oct 5)
+        - All date-related navigation maintains timezone consistency
+        
+    ✅ FIXED: Session Filtering in Day View - Corrected session display logic
+        - Day View now displays only sessions for the selected date
+        - Proper date matching implemented to prevent sessions from other dates appearing
+        - Session filtering uses consistent date comparison logic
+        - Empty timeline displays correctly when no sessions are scheduled
+        
+    ✅ FIXED: Monthly Calendar Click Behavior - Standardized navigation behavior
+        - All date clicks in Monthly Calendar View now open Day View (not session details)
+        - Clicking on date areas and session areas both navigate to Day View
+        - Consistent behavior between Desktop and Mobile views
+        - Day View page lists all sessions scheduled for that specific date
+        
+    ✅ FIXED: Deployment 404 Error Prevention - Resolved routing and asset issues
+        - Updated Next.js configuration for production deployment stability
+        - Fixed routing configuration to prevent broken asset loading
+        - All dynamic and static routes now resolve correctly after deployment
+        - No 404 errors for JS, CSS, or API endpoints after deployment
+        
+    ✅ ENHANCED: Date Utility Functions - Centralized date handling
+        - Added formatDateForUrl() and parseDateFromUrl() utility functions
+        - Consistent date formatting across all calendar and session components
+        - Eliminated timezone conversion issues in date parsing
+        - Improved maintainability with centralized date logic
+        
+    ✅ VALIDATED: Cross-Platform Consistency - Verified desktop and mobile behavior
+        - Date selection works identically on desktop and mobile
+        - Day View displays correctly across all screen sizes
+        - Navigation between days via [←] [→] buttons functions properly
+        - No duplicate or excess sessions appear in any view
+        
+    ✅ UPDATED: Documentation - Corrected behavior specifications
+        - Updated Business Requirements with corrected calendar behavior
+        - Clarified date click actions on Monthly Calendar view
+        - Documented filtering rules for Day View sessions
+
+✅ UPDATED: Calendar View Layout and Behavior (January 2025)
+    ✅ IMPLEMENTED: Fixed Top Bar for Calendar View
+        - Added "Calendar" title to the left side of the top bar
+        - Made the top bar fixed (sticky) so it remains visible when scrolling
+        - Positioned "[+Add Session]" button on the right side of the top bar
+        - Consistent styling and spacing following the same pattern as Students and Settings pages
+        - Responsive design that works on both Mobile and Desktop views
+        
+    ✅ IMPLEMENTED: Year Selector Dropdown (October 2025)
+        - Added year selector dropdown to the Calendar view top bar
+        - Positioned between "Calendar" title and "[+Add Session]" button
+        - Displays a list of years (current year ±5 years)
+        - When a year is selected:
+            * Calendar view updates immediately to display the selected year
+            * Selected month is preserved (e.g., if viewing March 2024, selecting 2025 shows March 2025)
+        - Smooth transitions when changing years with no page reload
+        - Responsive design:
+            * Desktop: 120px width with full year display
+            * Mobile: 100px width with compact layout
+        - Uses Radix UI Select component for accessibility and consistent styling
+        - Top bar layout:
+            * Left: "Calendar" title (bold, large text)
+            * Center: Year selector dropdown
+            * Right: "[+Add Session]" button (responsive text: "Add Session" on desktop, "Add" on mobile)
+        - Sticky positioning (stays fixed at top when scrolling)
+        - All existing calendar functionalities preserved (month navigation, session creation, etc.)
+        
+    ✅ IMPLEMENTED: Monday-Start Week Calendar
+        - Changed calendar view so that the week starts on Monday instead of Sunday
+        - Updated week day headers to display in Monday-to-Sunday order
+        - Modified startOfWeek and endOfWeek functions to use weekStartsOn: 1 option
+        - Maintains consistent date-fns library usage for all date calculations
+
+Mobile Navigation & Touch Support:
+    ✅ IMPLEMENTED: Mobile Swipe Navigation - Touch gesture support across all pages
+        - Swipe left/right navigation between main views (Calendar, Students, Settings)
+        - Swipe left/right navigation between calendar days in Day View
+        - Swipe right to go back on detail pages (Student Details, Session Details)
+        - Smooth touch interactions with proper velocity and threshold detection
+        - Touch-optimized button sizes and interaction areas
+        - Prevents accidental swipes during scrolling or other interactions
+        
+    ✅ IMPLEMENTED: Mobile Touch Optimizations - Enhanced mobile user experience
+        - Touch manipulation classes for better gesture recognition
+        - Smooth scrolling with webkit-overflow-scrolling support
+        - No-select classes to prevent text selection during swipes
+        - Touch-friendly button sizes (minimum 44px touch targets)
+        - Optimized touch action properties for better gesture handling
+        
+    ✅ FIXED: Calendar Day View Header Positioning - Mobile layout improvements
+        - Fixed header positioning to account for fixed top bar (top: 73px)
+        - Header no longer hidden under frozen top bar on mobile devices
+        - Proper z-index layering for mobile navigation
+        - Responsive header layout with mobile-optimized button sizes
+        - Touch-friendly navigation controls for day switching
+        
+    ✅ SIMPLIFIED: Calendar Day View Interface - Streamlined mobile experience
+        - Removed date navigation buttons (previous/next day arrows) for cleaner interface
+        - Removed Add Session button from Calendar Day View page
+        - Static date display with centered layout for better mobile readability
+        - Maintained swipe navigation for day changes (swipe left/right)
+        - Cleaner, more focused interface optimized for mobile viewing
+        - Session creation still available via time slot clicks in timeline
+        - Added deployment stability guidelines and QA checklist
+
+✅ UPDATED: Mobile Navigation Enhancement (January 2025)
+    ✅ IMPLEMENTED: Bottom Navigation Bar - Mobile-optimized navigation system
+        - Moved navigation from top to bottom for better mobile UX
+        - Fixed bottom navigation bar with 88px height
+        - Touch-friendly interface with proper spacing and sizing
+        - Active tab highlighting with green background (bg-green-100) and green text (text-green-700)
+        - Only the selected tab is highlighted, others remain unhighlighted
+        - Calendar tab selected by default on application load
+        - Enhanced UI with rounded corners, shadows, and smooth transitions
+        
+    ✅ IMPLEMENTED: Mobile-Friendly Entity Page Headers
+        - Replaced contextual bar with simplified sticky headers
+        - Sticky positioning for easy access during scrolling
+        - Mobile-optimized back button and action buttons
+        - Consistent design across all entity pages
+        
+    ✅ ENHANCED: Mobile Responsiveness
+        - Bottom navigation remains visible during scrolling
+        - Proper spacing and padding for mobile devices
+        - Touch-friendly button sizes and interaction areas
+        - Improved accessibility for mobile users
+        
+    ✅ UPDATED: Layout Structure
+        - Root layout uses bottom padding (pb-[80px]) for bottom navigation
+        - Entity pages use sticky headers instead of fixed contextual bars
+        - Content scrolls smoothly under fixed bottom navigation
+        - No content overlap with navigation elements
+        
+    Benefits:
+        - Better mobile user experience with bottom navigation
+        - Easier thumb navigation on mobile devices
+        - Consistent navigation access across all pages
+        - Improved touch interface for mobile users
+        - Enhanced accessibility and usability
+
+✅ IMPLEMENTED: Tasks Management System
+    A comprehensive task management system that helps instructors track and complete overdue sessions.
+    
+    Tasks Tab:
+        - New "Tasks" tab added to bottom navigation bar
+        - Positioned between "Students" and "Settings" tabs
+        - Uses CheckSquare icon for clear visual identification
+        - Follows same navigation pattern as other tabs with URL parameter support
+        
+    Task List View:
+        - Displays all sessions with status "Scheduled" that are in the past
+        - Tasks are sorted by date (oldest first) for priority handling
+        - Each task shows simplified information:
+            * Session name with student count (e.g., "Session with 2 students")
+            * Date: <Formatted Date>
+            * Time: <Start Time in 12-hour format>
+            * "Overdue" status indicator
+        - Clean, scrollable list with responsive design optimized for mobile
+        - Empty state with encouraging message when no overdue tasks
+        - Fixed time display to show actual session start times instead of "Invalid time"
+        - ✅ UPDATED: Simplified task item display for better readability and mobile UX
+        
+    Task Details Modal:
+        - Clicking on a task opens a detailed modal
+        - Shows comprehensive task information:
+            * Session name and participants
+            * Scheduled date and time (properly formatted in 12-hour format)
+            * Clear description of what needs to be done
+        - Includes "Complete Task" button for direct navigation
+        - Modal can be closed with Cancel button or X button
+        - Fixed time display to show actual session start times instead of "Invalid time"
+        
+    Task Completion Flow:
+        - "Complete Task" button redirects to corresponding Session Details page
+        - Session Details page includes return URL parameter to navigate back to Tasks tab
+        - After session completion, automatically navigates back to Tasks tab
+        - Tasks list automatically refreshes to remove completed sessions
+        - Maintains existing session completion workflow with enhanced navigation
+        - Seamless integration with current session management system
+        - Improved user experience with automatic navigation flow
+        
+    Mobile Optimization:
+        - Touch-friendly interface with proper spacing
+        - Responsive design that works on all screen sizes
+        - Smooth scrolling and interaction feedback
+        - Consistent with existing app design patterns
+        
+    Benefits:
+        - Helps instructors stay on top of overdue sessions
+        - Prevents missed sessions and improves accountability
+        - Clear task prioritization with date-based sorting
+        - Streamlined workflow from task identification to completion
+        - Better session management and instructor productivity
