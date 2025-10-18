@@ -163,16 +163,23 @@ export default function EditSessionPage() {
     }
   };
 
-  const handleStudentAdded = () => {
+  const handleStudentAdded = (studentId?: string) => {
     const loadedStudents = getStudents();
     setStudents(loadedStudents);
     
-    // Get the most recently added student (by createdAt)
-    if (loadedStudents.length > 0) {
-      const newest = loadedStudents.reduce((prev, current) => 
-        new Date(current.createdAt) > new Date(prev.createdAt) ? current : prev
-      );
-      setLastAddedStudentId(newest.id);
+    if (studentId) {
+      // If a specific student ID is provided, add that student to the session
+      if (!selectedStudentIds.includes(studentId)) {
+        setSelectedStudentIds(prev => [...prev, studentId]);
+      }
+    } else {
+      // Get the most recently added student (by createdAt) - for newly created students
+      if (loadedStudents.length > 0) {
+        const newest = loadedStudents.reduce((prev, current) => 
+          new Date(current.createdAt) > new Date(prev.createdAt) ? current : prev
+        );
+        setLastAddedStudentId(newest.id);
+      }
     }
   };
 
@@ -446,11 +453,14 @@ export default function EditSessionPage() {
                     </p>
                     {/* Search Input */}
                     <Input
+                      id="student-search"
+                      name="student-search"
                       type="text"
                       placeholder="Search students..."
                       value={studentSearchQuery}
                       onChange={(e) => setStudentSearchQuery(e.target.value)}
                       className="h-9"
+                      aria-label="Search students"
                     />
                     <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
                       {filteredAvailableStudents.map((student) => (
@@ -542,6 +552,7 @@ export default function EditSessionPage() {
         open={showAddStudentDialog}
         onOpenChange={setShowAddStudentDialog}
         onStudentAdded={handleStudentAdded}
+        existingStudentIds={selectedStudentIds}
       />
 
       {/* Back Navigation Confirmation Dialog */}

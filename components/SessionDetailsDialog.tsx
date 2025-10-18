@@ -113,42 +113,24 @@ export function SessionDetailsDialog({
                 Attendees ({sessionStudents.length})
               </p>
             </div>
-            <div className="space-y-2 pl-7">
+            <div className="space-y-2 pl-7 max-h-[300px] overflow-y-auto">
               {sessionStudents.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No students assigned</p>
               ) : (
                 sessionStudents.map((student) => (
                   <Card key={student.id} className="hover:shadow-sm transition-shadow cursor-pointer" onClick={() => onAttendeeClick && onAttendeeClick(student.id)}>
-                    <CardContent className="p-4">
+                    <CardContent className="p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <p className="text-sm font-medium">{student.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Balance: {student.balance} {Math.abs(student.balance) === 1 ? 'session' : 'sessions'}
-                          </p>
-                          {student.goals.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {student.goals.map((goal) => (
-                                <span
-                                  key={goal}
-                                  className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs"
-                                >
-                                  {goal}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <div className="text-right ml-4">
-                          <p className="text-xs text-muted-foreground">Charge</p>
-                          <p className="text-sm font-medium">
-                            {(() => {
-                              const settings = getSettings();
-                              const charge = session.sessionType === 'individual' 
-                                ? settings.defaultIndividualSessionCharge 
-                                : settings.defaultTeamSessionCharge;
-                              return `${charge} ${charge === 1 ? 'session' : 'sessions'}`;
-                            })()}
+                          <p className={`text-xs font-medium ${
+                            student.balance > 0 
+                              ? 'text-green-600' 
+                              : student.balance < 0 
+                              ? 'text-red-600' 
+                              : 'text-gray-600'
+                          }`}>
+                            Current Balance: {student.balance > 0 ? `+${student.balance}` : student.balance} {Math.abs(student.balance) === 1 ? 'session' : 'sessions'}
                           </p>
                         </div>
                       </div>

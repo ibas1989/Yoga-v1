@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { BottomNavigation } from "@/components/ui/bottom-navigation";
+import { BottomNavigationWithParams } from "@/components/ui/bottom-navigation";
 import { ClientBody } from "@/components/ClientBody";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Suspense } from "react";
 
 const inter = Inter({ 
   subsets: ["latin"],
   display: 'swap',
-  preload: true,
+  preload: false,
   fallback: ['system-ui', 'arial']
 });
 
@@ -29,7 +30,9 @@ export default function RootLayout({
       </head>
       <ClientBody className={inter.className}>
         <ErrorBoundary>
-          <BottomNavigation />
+          <Suspense fallback={<div className="fixed bottom-0 left-0 right-0 h-[88px] bg-background border-t" />}>
+            <BottomNavigationWithParams />
+          </Suspense>
           {/* Add bottom padding to account for fixed bottom navigation (88px height) */}
           <div className="pb-[88px]">
             {children}

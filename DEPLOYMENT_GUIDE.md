@@ -137,6 +137,9 @@ open http://localhost:3000
     - Test that students are immediately added to the attendee list after selection/creation
     - Test that the AddStudentDialog closes automatically after adding a student
     - Test that users can continue completing the session immediately after adding students
+    - ✅ FIXED: Verify that both existing student selection and new student creation work properly
+    - ✅ FIXED: Verify that students appear in "Added Attendees (Not Planned)" section with green highlighting
+    - ✅ FIXED: Verify that existingStudentIds parameter correctly filters out originally planned students
     - Test responsive design works properly on both mobile and desktop views
     - Verify proper alignment and UI consistency across different screen sizes
 - ✅ NEW: Test Notes listing interface cleanup
@@ -315,6 +318,20 @@ open http://localhost:3000
   - Test smooth transitions and proper state management
 - **Mobile Responsiveness**: Verify touch-friendly interface and proper spacing
 - **Modal Interactions**: Test modal can be closed with Cancel button or X button
+
+### Session Details Testing
+- **Session Details Page**: Test session details page displays correctly at `/sessions/[id]`
+- **✅ NEW: Simplified Attendees List**: Verify attendees section shows only:
+  - Student name (clickable to navigate to student details)
+  - Current Balance (Sessions) with proper color coding
+  - Positive balances in green (text-green-600)
+  - Zero balances in grey (text-gray-600)  
+  - Negative balances in red (text-red-600)
+- **✅ NEW: Attendees List Scrolling**: Test that attendees list is scrollable with max height of 300px when many attendees
+- **✅ NEW: Removed Details**: Verify that phone, tags, notes, and charge information are no longer displayed in attendees list
+- **Navigation**: Test that clicking on attendee names navigates to student details page
+- **Responsive Design**: Verify attendees list works properly on both desktop and mobile views
+- **Session Details Dialog**: Test that session details dialog (modal) also shows simplified attendees list with same formatting
 
 ## 🔧 Deployment Methods
 
@@ -686,5 +703,28 @@ If you continue experiencing 404 errors:
 
 ---
 
+## 🐛 Bug Fixes
+
+### Student Addition to Sessions Bug Fix
+- **Issue**: When adding students to sessions via "Add Student" button, selected students were not being added to the session attendees list
+- **Root Cause**: 
+  - AddStudentDialog component was not receiving `existingStudentIds` prop
+  - `handleStudentAdded` function was not properly handling student ID parameter
+- **Solution Applied**:
+  - Added `existingStudentIds={selectedStudentIds}` prop to AddStudentDialog in both New Session and Edit Session pages
+  - Updated `handleStudentAdded` function to accept and handle `studentId` parameter
+  - Ensured proper student selection and addition to session attendees
+- **Files Modified**:
+  - `/app/sessions/new/page.tsx`
+  - `/app/sessions/[id]/edit/page.tsx`
+- **Testing Confirmation**:
+  - ✅ Students can now be properly added to sessions from both "New Session" and "Edit Session" pages
+  - ✅ Multiple students can be added in sequence without page refresh
+  - ✅ No duplicate attendees can be added to the same session
+  - ✅ Existing UI and styling preserved
+  - ✅ Both "New Session" and "Edit Session" pages maintain consistent behavior
+
+---
+
 **Last Updated**: January 2025
-**Version**: 1.1.3 (Enhanced Student Create Page)
+**Version**: 1.1.4 (Student Addition Bug Fix)

@@ -16,15 +16,21 @@ import { Calendar as CalendarIcon, Users, Settings, CheckSquare } from 'lucide-r
  * The bar is fixed at the bottom of the viewport and remains visible during scrolling.
  * Designed specifically for mobile devices with touch-friendly interface.
  */
-export function BottomNavigation() {
+export function BottomNavigationWithParams() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  
+  // Get view parameter
+  const viewParam = searchParams.get('view');
+  
+  return <BottomNavigation pathname={pathname} viewParam={viewParam} />;
+}
 
+export function BottomNavigation({ pathname, viewParam }: { pathname: string; viewParam: string | null }) {
   // Determine which view is active based on the pathname and search params
   const getActiveView = (): 'calendar' | 'students' | 'tasks' | 'settings' | 'none' => {
     // Check URL parameters first for home page views
     if (pathname === '/') {
-      const viewParam = searchParams.get('view');
       if (viewParam === 'students') return 'students';
       if (viewParam === 'tasks') return 'tasks';
       if (viewParam === 'settings') return 'settings';

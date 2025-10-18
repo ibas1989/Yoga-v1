@@ -69,6 +69,8 @@ export function CompleteSessionDialog({
         return prev;
       });
       loadStudents(); // Refresh student list
+      // Close the AddStudentDialog after adding
+      setShowAddStudentDialog(false);
     }
   };
 
@@ -251,7 +253,7 @@ export function CompleteSessionDialog({
         open={showAddStudentDialog}
         onOpenChange={setShowAddStudentDialog}
         onStudentAdded={addNewStudent}
-        existingStudentIds={selectedStudentIds}
+        existingStudentIds={session.studentIds}
       />
     </>
   );

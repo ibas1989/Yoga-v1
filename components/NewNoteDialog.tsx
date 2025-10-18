@@ -67,6 +67,8 @@ export function NewNoteDialog({ open, onOpenChange, onSave, isLoading = false }:
           <div className="space-y-6 py-4 flex-1 overflow-y-auto">
             <div className="space-y-2">
               <textarea
+                id="new-note-content"
+                name="new-note-content"
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
                 placeholder="Enter your note content here …"
