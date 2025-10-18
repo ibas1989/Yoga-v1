@@ -87,80 +87,39 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
 
   return (
     <div className="w-full h-screen flex flex-col overflow-hidden">
-      {/* Year Selector Section */}
-      <div className="fixed top-4 left-4 right-4 z-10 border border-border rounded-lg p-4 mb-4" style={{ backgroundColor: '#2563eb' }}>
-        <div className="flex items-center justify-center">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentMonth(subMonths(currentMonth, 12))}
-              aria-label="Previous year"
-              className="h-10 w-10 p-0 font-bold"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Select value={getYear(currentMonth).toString()} onValueChange={handleYearChange}>
-              <SelectTrigger className="w-[100px] sm:w-[120px] h-10 text-sm font-bold">
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map(year => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              onClick={() => setCurrentMonth(addMonths(currentMonth, 12))}
-              aria-label="Next year"
-              className="h-10 w-10 p-0 font-bold"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Month Selector Section */}
-      <div className="fixed top-24 left-4 right-4 z-10 border border-border rounded-lg p-4 mb-4" style={{ backgroundColor: '#2563eb' }}>
-        <div className="flex items-center justify-center">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={previousMonth}
-              aria-label="Previous month"
-              className="h-10 w-10 p-0 font-bold"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Select value={format(currentMonth, 'MMMM')} onValueChange={handleMonthChange}>
-              <SelectTrigger className="w-[120px] sm:w-[140px] h-10 text-sm font-bold">
-                <SelectValue placeholder="Month" />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map(month => (
-                  <SelectItem key={month} value={month}>
-                    {month}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              onClick={nextMonth}
-              aria-label="Next month"
-              className="h-10 w-10 p-0 font-bold"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-          </div>
+      {/* Navigation Selectors Section */}
+      <div className="fixed top-4 left-4 right-4 z-10 border border-border rounded-lg p-2" style={{ backgroundColor: '#2563eb' }}>
+        <div className="flex items-center justify-center gap-4">
+          <Select value={getYear(currentMonth).toString()} onValueChange={handleYearChange}>
+            <SelectTrigger className="w-[80px] sm:w-[90px] h-8 text-sm font-bold">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map(year => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select value={format(currentMonth, 'MMMM')} onValueChange={handleMonthChange}>
+            <SelectTrigger className="w-[100px] sm:w-[110px] h-8 text-sm font-bold">
+              <SelectValue placeholder="Month" />
+            </SelectTrigger>
+            <SelectContent>
+              {months.map(month => (
+                <SelectItem key={month} value={month}>
+                  {month}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Calendar Grid Section */}
-      <div className="fixed top-44 left-4 right-4 bottom-4 z-10 bg-background border border-border rounded-lg p-0">
+      <div className="fixed top-20 left-4 right-4 bottom-4 z-10 bg-background border border-border rounded-lg p-0">
         <div className="grid grid-cols-7 gap-2 mb-0">
           {weekDays.map(day => (
             <div
@@ -173,7 +132,7 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
         </div>
 
         {/* Compact Calendar Grid - Fixed 7x5 grid with fixed height */}
-        <div className="grid grid-cols-7 grid-rows-5 border border-border rounded-lg" style={{ gridTemplateRows: 'repeat(5, 1fr)', height: '550px' }}>
+        <div className="grid grid-cols-7 grid-rows-5 border border-border rounded-lg" style={{ gridTemplateRows: 'repeat(5, 1fr)', height: '500px' }}>
           {calendarDays.map((day, index) => {
             const daySessions = getSessionsForDate(day)
               .slice()
@@ -224,7 +183,7 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
                   isSelected && "bg-primary/20 border-primary",
                   isToday && "bg-blue-100 border-blue-500 border-2 shadow-lg"
                 )}
-                style={{ minHeight: '110px' }}
+                style={{ minHeight: '100px' }}
                 onClick={() => handleDateClick(day)}
               >
                 {/* Date Number - Green circle if sessions exist, centered */}

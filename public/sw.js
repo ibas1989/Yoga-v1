@@ -47,6 +47,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip Next.js development server requests and static files to avoid conflicts
+  if (event.request.url.includes('/_next/') || 
+      event.request.url.includes('/__next') ||
+      event.request.url.includes('.hot-update.')) {
+    return;
+  }
+  
   // Skip Next.js development server requests to avoid conflicts
   if (event.request.url.includes('/_next/static/') && event.request.url.includes('localhost')) {
     return;

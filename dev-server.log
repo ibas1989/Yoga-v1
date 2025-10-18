@@ -1,0 +1,74 @@
+
+> yoga-class-tracker@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.6
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.100.4:3000
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 1239ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3.1s (1015 modules)
+ HEAD / 200 in 3496ms
+ ✓ Compiled in 122ms (434 modules)
+ GET / 200 in 77ms
+ GET / 200 in 83ms
+ ✓ Compiled /_not-found in 324ms (996 modules)
+ GET / 200 in 633ms
+ GET /sessions 404 in 630ms
+ GET /calendar 404 in 631ms
+ ✓ Compiled /calendar/day/[date] in 252ms (1011 modules)
+ GET /calendar/day/2025-10-17 200 in 650ms
+ GET / 200 in 73ms
+ GET / 200 in 155ms
+ GET /sessions 404 in 152ms
+ GET /calendar 404 in 152ms
+ ⚠ Found a change in next.config.js. Restarting the server to apply the changes...
+   ▲ Next.js 15.5.6
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.100.4:3000
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 1260ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1198ms (1006 modules)
+ GET / 200 in 1874ms
+ ✓ Compiled in 360ms (434 modules)
+ ✓ Compiled /_not-found in 259ms (996 modules)
+ GET / 200 in 558ms
+ GET /sessions 404 in 556ms
+ GET /calendar 404 in 556ms
+ GET /?view=settings 200 in 66ms
+ GET /?view=calendar 200 in 73ms
+ ✓ Compiled in 599ms (1007 modules)
+ GET /?view=calendar 200 in 119ms
+ ✓ Compiled in 437ms (1007 modules)
+ ✓ Compiled in 274ms (1007 modules)
+ ✓ Compiled in 209ms (1007 modules)
+ ✓ Compiled in 198ms (1007 modules)
+ ✓ Compiled in 194ms (1007 modules)
+ ✓ Compiled in 296ms (1007 modules)
+ ✓ Compiled in 201ms (1007 modules)
+ ✓ Compiled in 181ms (1007 modules)
+ ✓ Compiled in 331ms (1007 modules)
+ ✓ Compiled in 211ms (1007 modules)
+ ✓ Compiled in 393ms (1007 modules)
+ ✓ Compiled in 177ms (1007 modules)
+ ✓ Compiled in 209ms (1007 modules)
+ ✓ Compiled in 241ms (1007 modules)
+ ✓ Compiled in 172ms (1007 modules)
+ ✓ Compiled in 186ms (1007 modules)
+ ✓ Compiled in 333ms (1007 modules)
+ ✓ Compiled in 193ms (1007 modules)
+ ✓ Compiled in 176ms (1007 modules)
+ ✓ Compiled in 220ms (1007 modules)
+ ✓ Compiled in 282ms (1001 modules)
+ ✓ Compiled in 177ms (1001 modules)
+ ✓ Compiled in 232ms (1001 modules)
+ ✓ Compiled in 236ms (1001 modules)
+ ✓ Compiled in 165ms (1001 modules)
