@@ -110,8 +110,12 @@ export function AddStudentDialog({
   };
 
   const handleSelectStudent = (studentId: string) => {
+    // First call the callback to add the student
     onStudentAdded(studentId);
-    onOpenChange(false);
+    // Then close the dialog after a brief delay to ensure the callback completes
+    setTimeout(() => {
+      onOpenChange(false);
+    }, 0);
   };
 
   const handleSave = () => {
@@ -139,7 +143,10 @@ export function AddStudentDialog({
 
     saveStudent(newStudent);
     onStudentAdded(newStudent.id);
-    onOpenChange(false);
+    // Close the dialog after a brief delay to ensure the callback completes
+    setTimeout(() => {
+      onOpenChange(false);
+    }, 0);
   };
 
   // Filter students that aren't already in the session
@@ -149,8 +156,8 @@ export function AddStudentDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] flex flex-col">
+    <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] flex flex-col z-[60]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Add Student to Session</DialogTitle>
           <DialogDescription>

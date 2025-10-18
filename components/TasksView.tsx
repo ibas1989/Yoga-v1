@@ -8,6 +8,7 @@ import { Card, CardContent } from './ui/card';
 import { Session, Student } from '@/lib/types';
 import { getSessions, getStudents } from '@/lib/storage';
 import { formatDate, formatTime, formatTimeString } from '@/lib/utils/dateUtils';
+import { isSessionEndTimePassed } from '@/lib/utils';
 
 interface Task {
   id: string;
@@ -28,16 +29,29 @@ export function TasksView() {
   useEffect(() => {
     loadTasks();
     
-    // Listen for session completion events to refresh tasks
-    const handleSessionCompleted = () => {
+    // Listen for all session-related events to refresh tasks
+    const handleSessionChanged = () => {
       loadTasks();
     };
     
     if (typeof window !== 'undefined') {
-      window.addEventListener('sessionCompleted', handleSessionCompleted);
+      // Listen to all session change events
+      window.addEventListener('sessionCreated', handleSessionChanged);
+      window.addEventListener('sessionUpdated', handleSessionChanged);
+      window.addEventListener('sessionCompleted', handleSessionChanged);
+      window.addEventListener('sessionCancelled', handleSessionChanged);
+      window.addEventListener('sessionDeleted', handleSessionChanged);
+      window.addEventListener('sessionChanged', handleSessionChanged);
+      window.addEventListener('taskListUpdate', handleSessionChanged);
       
       return () => {
-        window.removeEventListener('sessionCompleted', handleSessionCompleted);
+        window.removeEventListener('sessionCreated', handleSessionChanged);
+        window.removeEventListener('sessionUpdated', handleSessionChanged);
+        window.removeEventListener('sessionCompleted', handleSessionChanged);
+        window.removeEventListener('sessionCancelled', handleSessionChanged);
+        window.removeEventListener('sessionDeleted', handleSessionChanged);
+        window.removeEventListener('sessionChanged', handleSessionChanged);
+        window.removeEventListener('taskListUpdate', handleSessionChanged);
       };
     }
   }, []);
@@ -49,10 +63,10 @@ export function TasksView() {
       const students = getStudents();
       const now = new Date();
       
-      // Filter sessions that are scheduled and in the past
+      // Filter sessions that are scheduled and whose end time has passed
       const overdueSessions = sessions.filter(session => 
         session.status === 'scheduled' && 
-        new Date(session.date) < now
+        isSessionEndTimePassed(session)
       );
 
       // Convert sessions to tasks
@@ -128,7 +142,7 @@ export function TasksView() {
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 p-4 shadow-sm">
         <h2 className="text-lg font-semibold">Tasks</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Overdue sessions that need to be completed
+          Sessions whose end time has passed and need to be completed
         </p>
       </div>
       
@@ -139,7 +153,7 @@ export function TasksView() {
             <CardContent className="pt-6">
               <div className="text-center py-12">
                 <CheckSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-base font-semibold mb-2">No overdue tasks</h3>
+                <h3 className="text-base font-semibold mb-2">No pending tasks</h3>
                 <p className="text-sm text-muted-foreground">
                   All your sessions are up to date! Great job staying on top of things.
                 </p>
@@ -178,7 +192,7 @@ export function TasksView() {
                 </div>
                 <div className="flex items-center space-x-2 ml-4">
                   <span className="text-xs font-medium px-2 py-1 rounded-full text-orange-700 bg-orange-100">
-                    Overdue
+                    Pending
                   </span>
                 </div>
               </div>

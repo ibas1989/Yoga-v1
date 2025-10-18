@@ -140,6 +140,7 @@ open http://localhost:3000
     - ✅ FIXED: Verify that both existing student selection and new student creation work properly
     - ✅ FIXED: Verify that students appear in "Added Attendees (Not Planned)" section with green highlighting
     - ✅ FIXED: Verify that existingStudentIds parameter correctly filters out originally planned students
+    - ✅ FIXED: Mobile view dialog sizing issues resolved with proper w-[95vw] responsive sizing
     - Test responsive design works properly on both mobile and desktop views
     - Verify proper alignment and UI consistency across different screen sizes
 - ✅ NEW: Test Notes listing interface cleanup
@@ -294,16 +295,43 @@ open http://localhost:3000
 
 ### Tasks Tab Testing
 - **Tasks Tab Navigation**: Verify Tasks tab is visible in bottom navigation
-- **Overdue Sessions Display**: Test that only scheduled sessions in the past are shown
+- **✅ ENHANCED: Dynamic Task Counter Badge**: Test the red circular badge on Tasks tab:
+  - ✅ UPDATED: Verify badge shows count of pending tasks (scheduled sessions whose end time has passed)
+  - Test badge is hidden when count = 0 (no pending tasks)
+  - Verify badge is positioned on top-right corner of Tasks icon
+  - Test badge color is red (#FF3B30) with white text
+  - ✅ NEW: Test real-time reactive updates that trigger automatically when:
+    - Sessions are completed or cancelled (removes from pending count)
+    - New sessions are created that qualify as pending tasks
+    - Existing sessions are edited affecting their scheduled time
+    - Sessions become overdue as time passes (checked every minute)
+  - ✅ NEW: Test comprehensive event listening system:
+    - Verify badge updates when sessions are created, updated, completed, cancelled, or deleted
+    - Test automatic updates without page reload
+    - Verify time-based interval checking for sessions becoming overdue
+  - Test responsive design on both desktop and mobile
+  - ✅ ENHANCED: Test smooth animations for count changes:
+    - Verify badge pulse animation on appearance
+    - Test count change animation with scale effect
+    - Verify hover effects for better interactivity
+    - Test animation key system ensures smooth transitions
+  - Test accessibility with proper aria-label for screen readers
+- **✅ UPDATED: Task Qualification Logic**: Test the updated task qualification logic:
+  - Verify that sessions are only added to tasks when their end time has passed
+  - Test that sessions with status "Scheduled" whose end time has not passed do not appear in tasks
+  - Verify that completed or cancelled sessions are immediately removed from tasks
+  - Test that the logic works consistently across task generation, filtering, and badge count
+  - Verify that time comparison respects user's local timezone settings
+- **✅ UPDATED: Pending Sessions Display**: Test that only scheduled sessions whose end time has passed are shown
 - **Task List Sorting**: Verify tasks are sorted by date (oldest first)
 - **Task Information**: Test that each task shows simplified information:
   - Session name with student count (e.g., "Session with 2 students")
   - Date: <Formatted Date>
   - Time: <Start Time in 12-hour format>
-  - "Overdue" status indicator
+  - ✅ UPDATED: "Pending" status indicator (changed from "Overdue")
   - ✅ FIXED: Verify time display shows actual session start times instead of "Invalid time"
   - ✅ UPDATED: Verify simplified task item layout for better mobile readability
-- **Empty State**: Test encouraging message when no overdue tasks exist
+- **Empty State**: Test encouraging message when no pending tasks exist
 - **Task Details Modal**: Test clicking on a task opens detailed modal with:
   - Session name and participants
   - Scheduled date and time (properly formatted in 12-hour format)
@@ -553,8 +581,30 @@ After deployment, verify:
 ### Mobile-Specific CSS Classes
 - `.touch-manipulation`: Optimizes touch gesture recognition
 - `.smooth-scroll`: Enables smooth scrolling on mobile devices
-- `.no-select`: Prevents text selection during swipes
-- `.touch-target`: Ensures minimum 44px touch target size
+
+## 🎨 UI Simplification Updates (January 2025)
+
+### Session Creation UI Simplification
+- **Enhancement**: Removed redundant "Available Students" section from New Session and Edit Session pages
+- **Changes Made**:
+  - Removed entire "Available Students" section including title, search field, and student list
+  - Streamlined student addition to use only the [+Add Student] button
+  - Maintained all existing functionality for adding students to sessions
+- **Benefits**:
+  - Cleaner, more focused UI with reduced visual clutter
+  - Simplified user workflow - single entry point for adding students
+  - Improved mobile experience with less scrolling required
+  - Maintained full functionality through AddStudentDialog component
+
+### Testing Requirements for UI Simplification
+- [ ] Verify [+Add Student] button is visible and functional on both New Session and Edit Session pages
+- [ ] Test that clicking [+Add Student] opens the AddStudentDialog
+- [ ] Verify AddStudentDialog provides search functionality for existing students
+- [ ] Test that AddStudentDialog allows creating new students
+- [ ] Confirm that selected/created students are properly added to session attendees
+- [ ] Verify no "Available Students" section is displayed on session creation pages
+- [ ] Test mobile responsiveness and layout spacing after UI changes
+- [ ] Ensure desktop and mobile views maintain proper spacing and alignment
 
 ### Mobile Testing Checklist
 - [ ] Test swipe navigation between main views
@@ -724,7 +774,33 @@ If you continue experiencing 404 errors:
   - ✅ Existing UI and styling preserved
   - ✅ Both "New Session" and "Edit Session" pages maintain consistent behavior
 
+### Complete Session Navigation Issue Fix
+- **Issue**: When adding students from "Complete Session" dialog on mobile view, system was navigating to Session Details page instead of staying in Complete Session dialog
+- **Root Cause**: 
+  - Nested dialog behavior with Radix UI Dialog primitives
+  - When AddStudentDialog closed, it was triggering CompleteSessionDialog to close as well
+  - Race conditions in callback timing between student addition and dialog closing
+- **Solution Applied**:
+  - Modified CompleteSessionDialog onOpenChange handler to prevent closing when AddStudentDialog is open or when adding a student
+  - Added `isAddingStudent` state to track student addition process and prevent premature dialog closing
+  - Added conditional rendering for AddStudentDialog to ensure proper mount/unmount behavior
+  - Increased AddStudentDialog z-index to `z-[60]` to ensure proper layering above CompleteSessionDialog
+  - Added `modal={true}` prop to AddStudentDialog for proper modal behavior
+  - Enhanced timing with `setTimeout` to prevent race conditions between callback execution and dialog closing
+  - Added proper state management to prevent dialog closure during student addition process
+- **Files Modified**:
+  - `/components/CompleteSessionDialog.tsx`
+  - `/components/AddStudentDialog.tsx`
+- **Testing Confirmation**:
+  - ✅ Users now stay in Complete Session dialog after adding a student
+  - ✅ Multiple students can be added sequentially without losing context
+  - ✅ Proper dialog layering with AddStudentDialog appearing above CompleteSessionDialog
+  - ✅ Mobile view support with responsive `w-[95vw]` sizing
+  - ✅ No side effects on existing functionality
+  - ✅ Improved UX for session completion workflow
+  - ✅ Enhanced robustness with additional state management and timing controls
+
 ---
 
 **Last Updated**: January 2025
-**Version**: 1.1.4 (Student Addition Bug Fix)
+**Version**: 1.1.5 (Complete Session Navigation Fix)

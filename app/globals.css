@@ -69,5 +69,38 @@
     min-height: 44px;
     min-width: 44px;
   }
+  
+  /* Badge animation keyframes */
+  @keyframes badgePulse {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* Badge count change animation */
+  .badge-count-change {
+    animation: badgeCountChange 0.4s ease-in-out;
+  }
+  
+  @keyframes badgeCountChange {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
 }
 

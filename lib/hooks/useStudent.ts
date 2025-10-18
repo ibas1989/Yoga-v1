@@ -26,9 +26,10 @@ export function useStudent(studentId: string | null) {
           .sort((a, b) => b.date.getTime() - a.date.getTime());
         setSessions(studentSessions);
       } else {
-        setError('Student not found');
+        setError(`Student with ID "${studentId}" not found in database`);
       }
     } catch (err) {
+      console.error('Error loading student:', err);
       setError(err instanceof Error ? err.message : 'Failed to load student');
     } finally {
       setIsLoading(false);

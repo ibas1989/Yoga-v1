@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Calendar as CalendarIcon, Users, Settings, CheckSquare } from 'lucide-react';
+import { Badge } from './badge';
+import { getPendingTasksCount } from '@/lib/utils';
 
 /**
  * BottomNavigation Component
@@ -27,6 +29,62 @@ export function BottomNavigationWithParams() {
 }
 
 export function BottomNavigation({ pathname, viewParam }: { pathname: string; viewParam: string | null }) {
+  const [pendingTasksCount, setPendingTasksCount] = useState(0);
+  const [badgeAnimationKey, setBadgeAnimationKey] = useState(0);
+  
+  // Update pending tasks count
+  useEffect(() => {
+    const updatePendingTasksCount = () => {
+      setPendingTasksCount(getPendingTasksCount());
+    };
+    
+    // Initial load
+    updatePendingTasksCount();
+    
+    // Listen for all session-related events to update count
+    const handleSessionChanged = () => {
+      const newCount = getPendingTasksCount();
+      if (newCount !== pendingTasksCount) {
+        setBadgeAnimationKey(prev => prev + 1);
+      }
+      updatePendingTasksCount();
+    };
+    
+    // Listen for storage changes (new sessions, session updates)
+    const handleStorageChange = () => {
+      updatePendingTasksCount();
+    };
+    
+    // Set up interval to check for sessions becoming overdue
+    const intervalId = setInterval(() => {
+      updatePendingTasksCount();
+    }, 60000); // Check every minute
+    
+    if (typeof window !== 'undefined') {
+      // Listen to all session change events
+      window.addEventListener('sessionCreated', handleSessionChanged);
+      window.addEventListener('sessionUpdated', handleSessionChanged);
+      window.addEventListener('sessionCompleted', handleSessionChanged);
+      window.addEventListener('sessionCancelled', handleSessionChanged);
+      window.addEventListener('sessionDeleted', handleSessionChanged);
+      window.addEventListener('sessionChanged', handleSessionChanged);
+      window.addEventListener('taskListUpdate', handleSessionChanged);
+      window.addEventListener('storage', handleStorageChange);
+      
+      return () => {
+        window.removeEventListener('sessionCreated', handleSessionChanged);
+        window.removeEventListener('sessionUpdated', handleSessionChanged);
+        window.removeEventListener('sessionCompleted', handleSessionChanged);
+        window.removeEventListener('sessionCancelled', handleSessionChanged);
+        window.removeEventListener('sessionDeleted', handleSessionChanged);
+        window.removeEventListener('sessionChanged', handleSessionChanged);
+        window.removeEventListener('taskListUpdate', handleSessionChanged);
+        window.removeEventListener('storage', handleStorageChange);
+        clearInterval(intervalId);
+      };
+    }
+  }, []);
+  
   // Determine which view is active based on the pathname and search params
   const getActiveView = (): 'calendar' | 'students' | 'tasks' | 'settings' | 'none' => {
     // Check URL parameters first for home page views
@@ -104,7 +162,7 @@ export function BottomNavigation({ pathname, viewParam }: { pathname: string; vi
               onClick={() => handleNavigation(item.view)}
               className={`
                 flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all duration-300 ease-in-out
-                min-h-[64px] min-w-[64px] touch-manipulation
+                min-h-[64px] min-w-[64px] touch-manipulation relative
                 ${isActive 
                   ? 'bg-green-100 text-green-700 shadow-md transform scale-105' 
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -112,9 +170,19 @@ export function BottomNavigation({ pathname, viewParam }: { pathname: string; vi
               `}
               aria-label={`Navigate to ${item.label}`}
             >
-              <Icon className={`h-6 w-6 mb-1 transition-colors duration-300 ${
-                isActive ? 'text-green-700' : 'text-gray-500'
-              }`} />
+              <div className="relative">
+                <Icon className={`h-6 w-6 mb-1 transition-colors duration-300 ${
+                  isActive ? 'text-green-700' : 'text-gray-500'
+                }`} />
+                {/* Show badge only for Tasks tab */}
+                {item.id === 'tasks' && (
+                  <Badge 
+                    key={badgeAnimationKey}
+                    count={pendingTasksCount} 
+                    className={badgeAnimationKey > 0 ? 'badge-count-change' : ''}
+                  />
+                )}
+              </div>
               <span className={`text-xs font-semibold transition-colors duration-300 ${
                 isActive ? 'text-green-700' : 'text-gray-500'
               }`}>

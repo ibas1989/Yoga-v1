@@ -101,6 +101,10 @@ fi
 print_status "Running deployment verification..."
 node scripts/verify-deployment.js
 
+# Run health check
+print_status "Running health check..."
+node scripts/health-check.js
+
 print_status "🎉 Deployment preparation completed successfully!"
 print_status ""
 print_status "Next steps:"

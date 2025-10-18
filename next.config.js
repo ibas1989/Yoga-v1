@@ -25,6 +25,7 @@ const nextConfig = {
         fs: false,
       };
     }
+    
     return config;
   },
   // Add security headers (only in production)
@@ -61,6 +62,38 @@ const nextConfig = {
             },
           ],
         },
+        // PWA specific headers
+        {
+          source: '/manifest.json',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=31536000, immutable',
+            },
+          ],
+        },
+        {
+          source: '/sw.js',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=0, must-revalidate',
+            },
+            {
+              key: 'Service-Worker-Allowed',
+              value: '/',
+            },
+          ],
+        },
+        {
+          source: '/icon-(.*)',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=31536000, immutable',
+            },
+          ],
+        },
       ];
     }
     return [];
@@ -68,4 +101,3 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-
