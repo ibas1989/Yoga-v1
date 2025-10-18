@@ -26,7 +26,7 @@ export function ClientBody({ children, className }: ClientBodyProps) {
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
     
     return () => {
-      cleanup();
+      cleanup?.();
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);

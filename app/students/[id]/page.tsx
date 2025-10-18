@@ -523,6 +523,8 @@ export default function StudentDetailsPage() {
                         {editingNoteId === note.id ? (
                           <div className="space-y-2">
                             <textarea
+                              id="edit-note-content"
+                              name="edit-note-content"
                               value={editingNoteContent}
                               onChange={(e) => setEditingNoteContent(e.target.value)}
                               className="w-full min-h-[60px] px-3 py-2 border border-input bg-background rounded-md text-sm"

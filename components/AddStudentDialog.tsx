@@ -318,6 +318,7 @@ export function AddStudentDialog({
               <Label htmlFor="description">Description</Label>
               <textarea
                 id="description"
+                name="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="General description about the student..."

@@ -314,6 +314,8 @@ export default function EditStudentPage() {
             </CardHeader>
             <CardContent>
               <textarea
+                id="description"
+                name="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="General description about the student..."

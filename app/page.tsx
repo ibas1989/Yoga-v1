@@ -14,22 +14,25 @@ import { Button } from '@/components/ui/button';
 import { Session } from '@/lib/types';
 import { useNavigationSwipe } from '@/lib/hooks/useMobileSwipe';
 
-function HomeContent() {
-  const router = useRouter();
+function HomeContentWithParams() {
   const searchParams = useSearchParams();
-  const [view, setView] = useState<'calendar' | 'students' | 'tasks' | 'settings'>('calendar');
+  
+  // Get view from URL parameters
+  const viewParam = searchParams.get('view');
+  const initialView = (viewParam === 'students' || viewParam === 'tasks' || viewParam === 'settings' || viewParam === 'calendar') 
+    ? viewParam as 'calendar' | 'students' | 'tasks' | 'settings'
+    : 'calendar';
+  
+  return <HomeContent initialView={initialView} />;
+}
+
+function HomeContent({ initialView }: { initialView: 'calendar' | 'students' | 'tasks' | 'settings' }) {
+  const router = useRouter();
+  const [view, setView] = useState<'calendar' | 'students' | 'tasks' | 'settings'>(initialView);
   const [calendarRefresh, setCalendarRefresh] = useState(0);
   
   // Mobile swipe navigation
   const { swipeRef } = useNavigationSwipe();
-
-  // Listen for view changes from URL parameters or external sources
-  useEffect(() => {
-    const viewParam = searchParams.get('view');
-    if (viewParam === 'students' || viewParam === 'tasks' || viewParam === 'settings' || viewParam === 'calendar') {
-      setView(viewParam as 'calendar' | 'students' | 'tasks' | 'settings');
-    }
-  }, [searchParams]);
 
   // Listen for custom viewchange events from bottom navigation
   useEffect(() => {
@@ -86,7 +89,7 @@ function HomeContent() {
 export default function Home() {
   return (
     <Suspense fallback={null}>
-      <HomeContent />
+      <HomeContentWithParams />
     </Suspense>
   );
 }

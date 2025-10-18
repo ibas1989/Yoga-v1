@@ -371,11 +371,14 @@ export function SessionDialog({
                   </p>
                   {/* Search Input */}
                   <Input
+                    id="student-search"
+                    name="student-search"
                     type="text"
                     placeholder="Search students..."
                     value={studentSearchQuery}
                     onChange={(e) => setStudentSearchQuery(e.target.value)}
                     className="h-9"
+                    aria-label="Search students"
                   />
                   <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
                     {filteredAvailableStudents.map((student) => (

@@ -4,23 +4,17 @@ const nextConfig = {
   trailingSlash: false,
   // Fix for Next.js 15 clientReferenceManifest issue
   serverExternalPackages: [],
-  // Remove standalone output for development
-  // output: 'standalone',
-  // Remove experimental.esmExternals as it's deprecated
-  // experimental: {
-  //   esmExternals: false,
-  // },
-  // Remove assetPrefix for development
-  // assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
   generateEtags: false,
   poweredByHeader: false,
   compress: true,
   // Ensure proper static file serving
   staticPageGenerationTimeout: 1000,
-  // Remove swcMinify as it's deprecated in Next.js 15
-  // swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Fix for Next.js 15 static file serving
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
   },
   // Ensure proper static file handling
   webpack: (config, { dev, isServer }) => {

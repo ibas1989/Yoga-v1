@@ -117,9 +117,12 @@ export function SettingsView() {
           <div className="space-y-4">
             <div className="flex gap-2">
               <Input
+                id="new-goal"
+                name="new-goal"
                 value={newGoal}
                 onChange={(e) => setNewGoal(e.target.value)}
                 placeholder="Add a new goal..."
+                aria-label="Add new goal"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     handleAddGoal();

@@ -727,6 +727,9 @@ Session Management & Navigation:
                     → Added students appear in separate "Added Attendees (Not Planned)" section with green highlighting
                     → Students are added to session attendee list immediately and dialog closes automatically
                     → User remains on Complete Session page and can continue completing the session
+                    → ✅ FIXED: Both existing student selection and new student creation work properly
+                    → ✅ FIXED: Students appear in "Added Attendees (Not Planned)" section with green highlighting
+                    → ✅ FIXED: AddStudentDialog properly filters out originally planned students
                     → Responsive design works on both mobile and desktop views
                   - Session type indicator showing deduction amount (Team = 1 session, Individual = 2 sessions)
                   - Summary section showing total attendees and sessions to deduct
@@ -775,6 +778,12 @@ Session Management & Navigation:
             - After saving, navigates back to Session Details page with refreshed data
     
     Functional Requirements:
+        - ✅ UPDATED: Simplified Attendees list display (January 2025):
+            - Shows only student Name and Current Balance (Sessions) for each attendee
+            - Removed additional details (phone, tags, notes, charge information) for cleaner UI
+            - Balance values display with color coding: positive in green (text-green-600), zero in grey (text-gray-600), negative in red (text-red-600)
+            - List is scrollable with max height of 300px when number of attendees exceeds visible area
+            - Maintains responsive design for both desktop and mobile views
         - Attendees list entries are clickable; clicking navigates to Student Details page for that student
         - System preserves context and refreshes data during navigation without manual reloads
         - Back button navigation maintains state consistency
@@ -1194,3 +1203,17 @@ Mobile Navigation & Touch Support:
         - Clear task prioritization with date-based sorting
         - Streamlined workflow from task identification to completion
         - Better session management and instructor productivity
+
+✅ FIXED: Student Addition to Sessions Bug
+    - Issue: When adding students to sessions via "Add Student" button, selected students were not being added to the session attendees list
+    - Root Cause: AddStudentDialog component was not receiving existingStudentIds prop, and handleStudentAdded function was not properly handling student ID parameter
+    - Solution: 
+        * Added existingStudentIds={selectedStudentIds} prop to AddStudentDialog in both New Session and Edit Session pages
+        * Updated handleStudentAdded function to accept and handle studentId parameter
+        * Ensured proper student selection and addition to session attendees
+    - Behavior Confirmation:
+        * ✅ Students can now be properly added to sessions from both "New Session" and "Edit Session" pages
+        * ✅ Multiple students can be added in sequence without page refresh
+        * ✅ No duplicate attendees can be added to the same session
+        * ✅ Existing UI and styling preserved
+        * ✅ Both "New Session" and "Edit Session" pages maintain consistent behavior

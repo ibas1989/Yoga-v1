@@ -217,6 +217,8 @@ export function NoteDetailsDialog({
               {isEditing ? (
                 <div className="space-y-3">
                   <textarea
+                    id="note-edit-content"
+                    name="note-edit-content"
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
                     placeholder="Edit note content..."

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 // Disable static generation for this page
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
 import {
@@ -27,19 +28,24 @@ import { Student, Session } from '@/lib/types';
 import { getStudents, getSettings, saveSession } from '@/lib/storage';
 import { formatDateForUrl, parseDateFromUrl } from '@/lib/utils/dateUtils';
 
-function NewSessionContent() {
-  const router = useRouter();
+function NewSessionContentWithParams() {
   const searchParams = useSearchParams();
-  
-  const [students, setStudents] = useState<Student[]>([]);
-  const [availableGoals, setAvailableGoals] = useState<string[]>([]);
-  const [defaultTeamCharge, setDefaultTeamCharge] = useState(1);
-  const [defaultIndividualCharge, setDefaultIndividualCharge] = useState(2);
   
   // Get date and time from query parameters if provided
   const dateParam = searchParams.get('date');
   const timeParam = searchParams.get('time');
   const returnTo = searchParams.get('returnTo');
+  
+  return <NewSessionContent dateParam={dateParam} timeParam={timeParam} returnTo={returnTo} />;
+}
+
+function NewSessionContent({ dateParam, timeParam, returnTo }: { dateParam: string | null; timeParam: string | null; returnTo: string | null }) {
+  const router = useRouter();
+  
+  const [students, setStudents] = useState<Student[]>([]);
+  const [availableGoals, setAvailableGoals] = useState<string[]>([]);
+  const [defaultTeamCharge, setDefaultTeamCharge] = useState(1);
+  const [defaultIndividualCharge, setDefaultIndividualCharge] = useState(2);
   
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [startTime, setStartTime] = useState('09:00');
@@ -151,16 +157,23 @@ function NewSessionContent() {
     }
   };
 
-  const handleStudentAdded = () => {
+  const handleStudentAdded = (studentId?: string) => {
     const loadedStudents = getStudents();
     setStudents(loadedStudents);
     
-    // Get the most recently added student (by createdAt)
-    if (loadedStudents.length > 0) {
-      const newest = loadedStudents.reduce((prev, current) => 
-        new Date(current.createdAt) > new Date(prev.createdAt) ? current : prev
-      );
-      setLastAddedStudentId(newest.id);
+    if (studentId) {
+      // If a specific student ID is provided, add that student to the session
+      if (!selectedStudentIds.includes(studentId)) {
+        setSelectedStudentIds(prev => [...prev, studentId]);
+      }
+    } else {
+      // Get the most recently added student (by createdAt) - for newly created students
+      if (loadedStudents.length > 0) {
+        const newest = loadedStudents.reduce((prev, current) => 
+          new Date(current.createdAt) > new Date(prev.createdAt) ? current : prev
+        );
+        setLastAddedStudentId(newest.id);
+      }
     }
   };
 
@@ -434,11 +447,14 @@ function NewSessionContent() {
                     </p>
                     {/* Search Input */}
                     <Input
+                      id="student-search"
+                      name="student-search"
                       type="text"
                       placeholder="Search students..."
                       value={studentSearchQuery}
                       onChange={(e) => setStudentSearchQuery(e.target.value)}
                       className="h-9"
+                      aria-label="Search students"
                     />
                     <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
                       {filteredAvailableStudents.map((student) => (
@@ -530,6 +546,7 @@ function NewSessionContent() {
         open={showAddStudentDialog}
         onOpenChange={setShowAddStudentDialog}
         onStudentAdded={handleStudentAdded}
+        existingStudentIds={selectedStudentIds}
       />
 
       {/* Back Navigation Confirmation Dialog */}
@@ -551,7 +568,7 @@ function NewSessionContent() {
 export default function NewSessionPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <NewSessionContent />
+      <NewSessionContentWithParams />
     </Suspense>
   );
 }
