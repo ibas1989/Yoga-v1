@@ -16,18 +16,6 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
-  // Ensure proper static file handling
-  webpack: (config, { dev, isServer }) => {
-    // Fix for static file serving issues
-    if (!dev && !isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-      };
-    }
-    
-    return config;
-  },
   // Add security headers (only in production)
   async headers() {
     // Only apply strict CSP in production
