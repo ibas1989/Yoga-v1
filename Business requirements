@@ -730,6 +730,7 @@ Session Management & Navigation:
                     → ✅ FIXED: Both existing student selection and new student creation work properly
                     → ✅ FIXED: Students appear in "Added Attendees (Not Planned)" section with green highlighting
                     → ✅ FIXED: AddStudentDialog properly filters out originally planned students
+                    → ✅ FIXED: Mobile view dialog sizing issues resolved with proper w-[95vw] responsive sizing
                     → Responsive design works on both mobile and desktop views
                   - Session type indicator showing deduction amount (Team = 1 session, Individual = 2 sessions)
                   - Summary section showing total attendees and sessions to deduct
@@ -1217,3 +1218,23 @@ Mobile Navigation & Touch Support:
         * ✅ No duplicate attendees can be added to the same session
         * ✅ Existing UI and styling preserved
         * ✅ Both "New Session" and "Edit Session" pages maintain consistent behavior
+
+✅ FIXED: Complete Session Navigation Issue (Enhanced Fix)
+    - Issue: When adding students from "Complete Session" dialog on mobile view, system was navigating to Session Details page instead of staying in Complete Session dialog
+    - Root Cause: Nested dialog behavior with Radix UI Dialog primitives - when AddStudentDialog closed, it was triggering CompleteSessionDialog to close as well. Additional race conditions in callback timing were also identified.
+    - Solution:
+        * Modified CompleteSessionDialog onOpenChange handler to prevent closing when AddStudentDialog is open or when adding a student
+        * Added isAddingStudent state to track student addition process and prevent premature dialog closing
+        * Added conditional rendering for AddStudentDialog to ensure proper mount/unmount behavior
+        * Increased AddStudentDialog z-index to z-[60] to ensure proper layering above CompleteSessionDialog
+        * Added modal={true} prop to AddStudentDialog for proper modal behavior
+        * Enhanced timing with setTimeout to prevent race conditions between callback execution and dialog closing
+        * Added proper state management to prevent dialog closure during student addition process
+    - Behavior Confirmation:
+        * ✅ Users now stay in Complete Session dialog after adding a student
+        * ✅ Multiple students can be added sequentially without losing context
+        * ✅ Proper dialog layering with AddStudentDialog appearing above CompleteSessionDialog
+        * ✅ Mobile view support with responsive w-[95vw] sizing
+        * ✅ No side effects on existing functionality
+        * ✅ Improved UX for session completion workflow
+        * ✅ Enhanced robustness with additional state management and timing controls

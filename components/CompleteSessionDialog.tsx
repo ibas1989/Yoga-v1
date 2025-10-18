@@ -34,19 +34,22 @@ export function CompleteSessionDialog({
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [showAddStudentDialog, setShowAddStudentDialog] = useState(false);
+  const [isAddingStudent, setIsAddingStudent] = useState(false);
+
+  const loadStudents = () => {
+    const students = getStudents();
+    setAllStudents(students);
+  };
 
   useEffect(() => {
     if (open && session) {
       loadStudents();
       // Initialize with current session attendees
       setSelectedStudentIds([...session.studentIds]);
+      // Reset adding state when dialog opens
+      setIsAddingStudent(false);
     }
   }, [open, session]);
-
-  const loadStudents = () => {
-    const students = getStudents();
-    setAllStudents(students);
-  };
 
   if (!session) return null;
 
@@ -62,15 +65,22 @@ export function CompleteSessionDialog({
 
   const addNewStudent = (studentId?: string) => {
     if (studentId) {
+      setIsAddingStudent(true);
+      // Add student to selected list
       setSelectedStudentIds(prev => {
         if (!prev.includes(studentId)) {
           return [...prev, studentId];
         }
         return prev;
       });
-      loadStudents(); // Refresh student list
-      // Close the AddStudentDialog after adding
+      // Refresh student list to get updated data
+      loadStudents();
+      // Close the AddStudentDialog after adding - this should not close the CompleteSessionDialog
       setShowAddStudentDialog(false);
+      // Reset the adding state after a brief delay
+      setTimeout(() => {
+        setIsAddingStudent(false);
+      }, 100);
     }
   };
 
@@ -97,8 +107,15 @@ export function CompleteSessionDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(newOpen) => {
+        // Prevent closing the dialog when AddStudentDialog is open or when adding a student
+        if (!newOpen && (showAddStudentDialog || isAddingStudent)) {
+          return;
+        }
+        // Only allow closing if we're not in the middle of adding a student
+        onOpenChange(newOpen);
+      }}>
+        <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Complete Session</DialogTitle>
             <DialogDescription>
@@ -249,12 +266,14 @@ export function CompleteSessionDialog({
       </Dialog>
 
       {/* Add Student Dialog */}
-      <AddStudentDialog
-        open={showAddStudentDialog}
-        onOpenChange={setShowAddStudentDialog}
-        onStudentAdded={addNewStudent}
-        existingStudentIds={session.studentIds}
-      />
+      {showAddStudentDialog && (
+        <AddStudentDialog
+          open={showAddStudentDialog}
+          onOpenChange={setShowAddStudentDialog}
+          onStudentAdded={addNewStudent}
+          existingStudentIds={session.studentIds}
+        />
+      )}
     </>
   );
 }

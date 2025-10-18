@@ -1,0 +1,67 @@
+name: Deploy Yoga Class Tracker
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  pre-deployment-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run TypeScript check
+      run: npm run type-check
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Run pre-deployment checks
+      run: npm run pre-deploy
+      
+    - name: Test build
+      run: npm run test-build
+      
+    - name: Run health check (if deployed)
+      run: npm run health-check
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+  deploy:
+    needs: pre-deployment-checks
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Deploy
+      run: npm run deploy
+      
+    - name: Verify deployment
+      run: npm run verify
+      
+    - name: Health check
+      run: npm run health-check

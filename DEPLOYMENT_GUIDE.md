@@ -140,6 +140,7 @@ open http://localhost:3000
     - ✅ FIXED: Verify that both existing student selection and new student creation work properly
     - ✅ FIXED: Verify that students appear in "Added Attendees (Not Planned)" section with green highlighting
     - ✅ FIXED: Verify that existingStudentIds parameter correctly filters out originally planned students
+    - ✅ FIXED: Mobile view dialog sizing issues resolved with proper w-[95vw] responsive sizing
     - Test responsive design works properly on both mobile and desktop views
     - Verify proper alignment and UI consistency across different screen sizes
 - ✅ NEW: Test Notes listing interface cleanup
@@ -724,7 +725,33 @@ If you continue experiencing 404 errors:
   - ✅ Existing UI and styling preserved
   - ✅ Both "New Session" and "Edit Session" pages maintain consistent behavior
 
+### Complete Session Navigation Issue Fix
+- **Issue**: When adding students from "Complete Session" dialog on mobile view, system was navigating to Session Details page instead of staying in Complete Session dialog
+- **Root Cause**: 
+  - Nested dialog behavior with Radix UI Dialog primitives
+  - When AddStudentDialog closed, it was triggering CompleteSessionDialog to close as well
+  - Race conditions in callback timing between student addition and dialog closing
+- **Solution Applied**:
+  - Modified CompleteSessionDialog onOpenChange handler to prevent closing when AddStudentDialog is open or when adding a student
+  - Added `isAddingStudent` state to track student addition process and prevent premature dialog closing
+  - Added conditional rendering for AddStudentDialog to ensure proper mount/unmount behavior
+  - Increased AddStudentDialog z-index to `z-[60]` to ensure proper layering above CompleteSessionDialog
+  - Added `modal={true}` prop to AddStudentDialog for proper modal behavior
+  - Enhanced timing with `setTimeout` to prevent race conditions between callback execution and dialog closing
+  - Added proper state management to prevent dialog closure during student addition process
+- **Files Modified**:
+  - `/components/CompleteSessionDialog.tsx`
+  - `/components/AddStudentDialog.tsx`
+- **Testing Confirmation**:
+  - ✅ Users now stay in Complete Session dialog after adding a student
+  - ✅ Multiple students can be added sequentially without losing context
+  - ✅ Proper dialog layering with AddStudentDialog appearing above CompleteSessionDialog
+  - ✅ Mobile view support with responsive `w-[95vw]` sizing
+  - ✅ No side effects on existing functionality
+  - ✅ Improved UX for session completion workflow
+  - ✅ Enhanced robustness with additional state management and timing controls
+
 ---
 
 **Last Updated**: January 2025
-**Version**: 1.1.4 (Student Addition Bug Fix)
+**Version**: 1.1.5 (Complete Session Navigation Fix)
