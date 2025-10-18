@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths, startOfWeek, endOfWeek, setYear, getYear } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Session } from '@/lib/types';
@@ -70,24 +70,37 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
     setCurrentMonth(updatedMonth);
   };
 
-  const handleAddSession = () => {
-    window.location.href = '/sessions/new';
-  };
 
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+  // Generate months array
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const handleMonthChange = (monthStr: string) => {
+    const monthIndex = months.indexOf(monthStr);
+    const updatedMonth = new Date(getYear(currentMonth), monthIndex, 1);
+    setCurrentMonth(updatedMonth);
+  };
+
   return (
-    <div className="w-full h-full">
-      {/* Fixed Top Bar */}
-      <div className="sticky top-0 z-10 bg-background border-b pb-4 mb-6">
-        <div className="flex items-center justify-between gap-2 sm:gap-4">
-          {/* Left: Calendar Title */}
-          <h1 className="text-lg sm:text-xl font-bold flex-shrink-0">Calendar</h1>
-          
-          {/* Center: Year Selector */}
-          <div className="flex-shrink-0">
+    <div className="w-full h-screen flex flex-col overflow-hidden">
+      {/* Year Selector Section */}
+      <div className="fixed top-4 left-4 right-4 z-10 border border-border rounded-lg p-4 mb-4" style={{ backgroundColor: '#2563eb' }}>
+        <div className="flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentMonth(subMonths(currentMonth, 12))}
+              aria-label="Previous year"
+              className="h-10 w-10 p-0 font-bold"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
             <Select value={getYear(currentMonth).toString()} onValueChange={handleYearChange}>
-              <SelectTrigger className="w-[100px] sm:w-[120px] h-9">
+              <SelectTrigger className="w-[100px] sm:w-[120px] h-10 text-sm font-bold">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
               <SelectContent>
@@ -98,48 +111,57 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              variant="outline"
+              onClick={() => setCurrentMonth(addMonths(currentMonth, 12))}
+              aria-label="Next year"
+              className="h-10 w-10 p-0 font-bold"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
           </div>
-          
-          {/* Right: Add Session Button */}
-          <Button
-            onClick={handleAddSession}
-            size="sm"
-            className="flex-shrink-0"
-          >
-            <Plus className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Add Session</span>
-            <span className="sm:hidden">Add</span>
-          </Button>
         </div>
       </div>
 
-      <div className="mb-6">
-        {/* Month Navigation */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold">
-            {format(currentMonth, 'MMMM yyyy')}
-          </h2>
+      {/* Month Selector Section */}
+      <div className="fixed top-24 left-4 right-4 z-10 border border-border rounded-lg p-4 mb-4" style={{ backgroundColor: '#2563eb' }}>
+        <div className="flex items-center justify-center">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              size="icon"
               onClick={previousMonth}
               aria-label="Previous month"
+              className="h-10 w-10 p-0 font-bold"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
+            <Select value={format(currentMonth, 'MMMM')} onValueChange={handleMonthChange}>
+              <SelectTrigger className="w-[120px] sm:w-[140px] h-10 text-sm font-bold">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map(month => (
+                  <SelectItem key={month} value={month}>
+                    {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
-              size="icon"
               onClick={nextMonth}
               aria-label="Next month"
+              className="h-10 w-10 p-0 font-bold"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-7 gap-2 mb-2">
+      {/* Calendar Grid Section */}
+      <div className="fixed top-44 left-4 right-4 bottom-4 z-10 bg-background border border-border rounded-lg p-0">
+        <div className="grid grid-cols-7 gap-2 mb-0">
           {weekDays.map(day => (
             <div
               key={day}
@@ -150,7 +172,8 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-2 flex-1">
+        {/* Compact Calendar Grid - Fixed 7x5 grid with fixed height */}
+        <div className="grid grid-cols-7 grid-rows-5 border border-border rounded-lg" style={{ gridTemplateRows: 'repeat(5, 1fr)', height: '550px' }}>
           {calendarDays.map((day, index) => {
             const daySessions = getSessionsForDate(day)
               .slice()
@@ -160,58 +183,103 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
             const isToday = isSameDay(day, new Date());
             const hasAnySessions = daySessions.length > 0;
 
+            // Calculate session indicators (max 4: 1 circle + 3 squares)
+            const statusCounts = {
+              scheduled: daySessions.filter(s => s.status === 'scheduled').length,
+              completed: daySessions.filter(s => s.status === 'completed').length,
+              cancelled: daySessions.filter(s => s.status === 'cancelled').length
+            };
+
+            const sessionIndicators = [];
+            
+            // Add green circle for any sessions
+            if (hasAnySessions) {
+              sessionIndicators.push('circle');
+            }
+            
+            // Add squares for each status (max 3 additional)
+            const maxSquares = 3;
+            let squareCount = 0;
+            
+            if (statusCounts.scheduled > 0 && squareCount < maxSquares) {
+              sessionIndicators.push('scheduled');
+              squareCount++;
+            }
+            if (statusCounts.completed > 0 && squareCount < maxSquares) {
+              sessionIndicators.push('completed');
+              squareCount++;
+            }
+            if (statusCounts.cancelled > 0 && squareCount < maxSquares) {
+              sessionIndicators.push('cancelled');
+              squareCount++;
+            }
+
             return (
               <div
                 key={index}
                 className={cn(
-                  "min-h-[100px] p-2 cursor-pointer transition-colors flex flex-col border rounded-lg",
-                  !isCurrentMonth && "bg-muted/50 text-muted-foreground border-muted",
-                  isCurrentMonth && "hover:bg-accent border-border",
-                  isSelected && "ring-2 ring-primary",
-                  isToday && "bg-primary/10 border-primary"
+                  "w-full h-full p-1 cursor-pointer transition-colors flex flex-col border-r border-b border-border",
+                  !isCurrentMonth && "bg-muted/30 text-muted-foreground",
+                  isCurrentMonth && "bg-background hover:bg-accent/50",
+                  isSelected && "bg-primary/20 border-primary",
+                  isToday && "bg-blue-100 border-blue-500 border-2 shadow-lg"
                 )}
+                style={{ minHeight: '110px' }}
                 onClick={() => handleDateClick(day)}
               >
-                <div
-                  className="mb-1 flex-shrink-0 flex items-center justify-start"
-                >
+                {/* Date Number - Green circle if sessions exist, centered */}
+                <div className="flex justify-center mb-1 flex-shrink-0">
                   <div
                     className={cn(
-                      "h-6 w-6 sm:h-7 sm:w-7 rounded-full flex items-center justify-center text-xs sm:text-sm",
-                      isToday ? "ring-2 ring-primary text-primary" : "",
-                      hasAnySessions ? "bg-accent text-accent-foreground" : ""
+                      "text-sm font-semibold flex items-center justify-center",
+                      hasAnySessions 
+                        ? "w-7 h-7 bg-green-500 text-white rounded-full" 
+                        : "",
+                      !isCurrentMonth && !hasAnySessions && "text-muted-foreground/60",
+                      isToday && !hasAnySessions && "w-8 h-8 ring-2 ring-blue-500 bg-blue-500 text-white rounded-full font-bold"
                     )}
-                    aria-label={`${format(day, 'd')}${hasAnySessions ? ' has sessions' : ''}`}
                   >
                     {format(day, 'd')}
                   </div>
                 </div>
-                <div className="space-y-1 flex-1 overflow-hidden">
-                  {daySessions.slice(0, 10).map(session => (
-                    <div
-                      key={session.id}
-                      className={cn(
-                        "text-xs px-2 py-1 rounded truncate transition-colors hover:shadow-sm",
-                        session.status === 'completed' && "bg-green-100 text-green-700 border border-green-300 hover:bg-green-200",
-                        session.status === 'scheduled' && "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-                        session.status === 'cancelled' && "bg-red-100 text-red-700 line-through"
-                      )}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Always navigate to Day View instead of session details
-                        const dateStr = formatDateForUrl(day);
-                        window.location.href = `/calendar/day/${dateStr}`;
-                      }}
-                    >
-                      {session.startTime}
-                    </div>
-                  ))}
-                  {daySessions.length > 10 && (
-                    <div className="text-xs text-muted-foreground px-2 font-medium">
-                      +{daySessions.length - 10} more
-                    </div>
-                  )}
-                </div>
+
+                {/* Session Status Labels - Exactly 3 labels below green circle */}
+                {hasAnySessions && (
+                  <div className="flex flex-col gap-1 flex-1 items-center justify-start">
+                    {/* First: Scheduled sessions - Grey square */}
+                    {statusCounts.scheduled > 0 && (
+                      <div
+                        className="w-4 h-4 rounded-sm flex items-center justify-center text-xs font-medium text-white"
+                        style={{ backgroundColor: '#B5B5BA' }}
+                        title={`${statusCounts.scheduled} scheduled session${statusCounts.scheduled !== 1 ? 's' : ''}`}
+                      >
+                        {statusCounts.scheduled}
+                      </div>
+                    )}
+                    
+                    {/* Second: Completed sessions - Blue square */}
+                    {statusCounts.completed > 0 && (
+                      <div
+                        className="w-4 h-4 rounded-sm flex items-center justify-center text-xs font-medium text-white"
+                        style={{ backgroundColor: 'rgb(37, 99, 235)' }}
+                        title={`${statusCounts.completed} completed session${statusCounts.completed !== 1 ? 's' : ''}`}
+                      >
+                        {statusCounts.completed}
+                      </div>
+                    )}
+                    
+                    {/* Third: Canceled sessions - Orange square */}
+                    {statusCounts.cancelled > 0 && (
+                      <div
+                        className="w-4 h-4 rounded-sm flex items-center justify-center text-xs font-medium text-white"
+                        style={{ backgroundColor: 'rgb(249, 115, 22)' }}
+                        title={`${statusCounts.cancelled} cancelled session${statusCounts.cancelled !== 1 ? 's' : ''}`}
+                      >
+                        {statusCounts.cancelled}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

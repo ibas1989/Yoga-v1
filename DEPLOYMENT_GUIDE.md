@@ -295,16 +295,43 @@ open http://localhost:3000
 
 ### Tasks Tab Testing
 - **Tasks Tab Navigation**: Verify Tasks tab is visible in bottom navigation
-- **Overdue Sessions Display**: Test that only scheduled sessions in the past are shown
+- **✅ ENHANCED: Dynamic Task Counter Badge**: Test the red circular badge on Tasks tab:
+  - ✅ UPDATED: Verify badge shows count of pending tasks (scheduled sessions whose end time has passed)
+  - Test badge is hidden when count = 0 (no pending tasks)
+  - Verify badge is positioned on top-right corner of Tasks icon
+  - Test badge color is red (#FF3B30) with white text
+  - ✅ NEW: Test real-time reactive updates that trigger automatically when:
+    - Sessions are completed or cancelled (removes from pending count)
+    - New sessions are created that qualify as pending tasks
+    - Existing sessions are edited affecting their scheduled time
+    - Sessions become overdue as time passes (checked every minute)
+  - ✅ NEW: Test comprehensive event listening system:
+    - Verify badge updates when sessions are created, updated, completed, cancelled, or deleted
+    - Test automatic updates without page reload
+    - Verify time-based interval checking for sessions becoming overdue
+  - Test responsive design on both desktop and mobile
+  - ✅ ENHANCED: Test smooth animations for count changes:
+    - Verify badge pulse animation on appearance
+    - Test count change animation with scale effect
+    - Verify hover effects for better interactivity
+    - Test animation key system ensures smooth transitions
+  - Test accessibility with proper aria-label for screen readers
+- **✅ UPDATED: Task Qualification Logic**: Test the updated task qualification logic:
+  - Verify that sessions are only added to tasks when their end time has passed
+  - Test that sessions with status "Scheduled" whose end time has not passed do not appear in tasks
+  - Verify that completed or cancelled sessions are immediately removed from tasks
+  - Test that the logic works consistently across task generation, filtering, and badge count
+  - Verify that time comparison respects user's local timezone settings
+- **✅ UPDATED: Pending Sessions Display**: Test that only scheduled sessions whose end time has passed are shown
 - **Task List Sorting**: Verify tasks are sorted by date (oldest first)
 - **Task Information**: Test that each task shows simplified information:
   - Session name with student count (e.g., "Session with 2 students")
   - Date: <Formatted Date>
   - Time: <Start Time in 12-hour format>
-  - "Overdue" status indicator
+  - ✅ UPDATED: "Pending" status indicator (changed from "Overdue")
   - ✅ FIXED: Verify time display shows actual session start times instead of "Invalid time"
   - ✅ UPDATED: Verify simplified task item layout for better mobile readability
-- **Empty State**: Test encouraging message when no overdue tasks exist
+- **Empty State**: Test encouraging message when no pending tasks exist
 - **Task Details Modal**: Test clicking on a task opens detailed modal with:
   - Session name and participants
   - Scheduled date and time (properly formatted in 12-hour format)
@@ -554,8 +581,30 @@ After deployment, verify:
 ### Mobile-Specific CSS Classes
 - `.touch-manipulation`: Optimizes touch gesture recognition
 - `.smooth-scroll`: Enables smooth scrolling on mobile devices
-- `.no-select`: Prevents text selection during swipes
-- `.touch-target`: Ensures minimum 44px touch target size
+
+## 🎨 UI Simplification Updates (January 2025)
+
+### Session Creation UI Simplification
+- **Enhancement**: Removed redundant "Available Students" section from New Session and Edit Session pages
+- **Changes Made**:
+  - Removed entire "Available Students" section including title, search field, and student list
+  - Streamlined student addition to use only the [+Add Student] button
+  - Maintained all existing functionality for adding students to sessions
+- **Benefits**:
+  - Cleaner, more focused UI with reduced visual clutter
+  - Simplified user workflow - single entry point for adding students
+  - Improved mobile experience with less scrolling required
+  - Maintained full functionality through AddStudentDialog component
+
+### Testing Requirements for UI Simplification
+- [ ] Verify [+Add Student] button is visible and functional on both New Session and Edit Session pages
+- [ ] Test that clicking [+Add Student] opens the AddStudentDialog
+- [ ] Verify AddStudentDialog provides search functionality for existing students
+- [ ] Test that AddStudentDialog allows creating new students
+- [ ] Confirm that selected/created students are properly added to session attendees
+- [ ] Verify no "Available Students" section is displayed on session creation pages
+- [ ] Test mobile responsiveness and layout spacing after UI changes
+- [ ] Ensure desktop and mobile views maintain proper spacing and alignment
 
 ### Mobile Testing Checklist
 - [ ] Test swipe navigation between main views

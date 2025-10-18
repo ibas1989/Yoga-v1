@@ -46,7 +46,6 @@ export default function EditSessionPage() {
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
-  const [studentSearchQuery, setStudentSearchQuery] = useState('');
   const [showAddStudentDialog, setShowAddStudentDialog] = useState(false);
   const [lastAddedStudentId, setLastAddedStudentId] = useState<string | null>(null);
   const notesTextareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -256,13 +255,6 @@ export default function EditSessionPage() {
     return `${sessionCount} session${plural}`;
   };
 
-  // Filter students based on search query
-  const filteredAvailableStudents = students
-    .filter(student => !selectedStudentIds.includes(student.id))
-    .filter(student => 
-      studentSearchQuery.length === 0 || 
-      student.name.toLowerCase().includes(studentSearchQuery.toLowerCase())
-    );
 
   if (isLoading || !originalSession) {
     return (
@@ -446,61 +438,6 @@ export default function EditSessionPage() {
                     </div>
                   )}
 
-                  {/* Available Students */}
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Available Students
-                    </p>
-                    {/* Search Input */}
-                    <Input
-                      id="student-search"
-                      name="student-search"
-                      type="text"
-                      placeholder="Search students..."
-                      value={studentSearchQuery}
-                      onChange={(e) => setStudentSearchQuery(e.target.value)}
-                      className="h-9"
-                      aria-label="Search students"
-                    />
-                    <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
-                      {filteredAvailableStudents.map((student) => (
-                        <div
-                          key={student.id}
-                          className="flex items-center justify-between p-2 hover:bg-accent rounded-md transition-colors cursor-pointer"
-                          onClick={() => handleStudentToggle(student.id)}
-                        >
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{student.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Balance: {formatBalanceAsSessionCount(student.balance)}
-                            </p>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 px-3"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleStudentToggle(student.id);
-                            }}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      {filteredAvailableStudents.length === 0 && studentSearchQuery.length > 0 && (
-                        <p className="text-sm text-muted-foreground text-center py-2">
-                          No students found matching "{studentSearchQuery}"
-                        </p>
-                      )}
-                      {filteredAvailableStudents.length === 0 && studentSearchQuery.length === 0 && (
-                        <p className="text-sm text-muted-foreground text-center py-2">
-                          All students are selected
-                        </p>
-                      )}
-                    </div>
-                  </div>
                 </div>
               )}
             </div>

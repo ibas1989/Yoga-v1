@@ -1,19 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Save, Plus, X } from 'lucide-react';
+import { Save, Plus, X, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { AppSettings } from '@/lib/types';
 import { getSettings, saveSettings } from '@/lib/storage';
+import { BackupManager } from './BackupManager';
 
 export function SettingsView() {
   const [defaultTeamCharge, setDefaultTeamCharge] = useState('1');
   const [defaultIndividualCharge, setDefaultIndividualCharge] = useState('2');
   const [goals, setGoals] = useState<string[]>([]);
   const [newGoal, setNewGoal] = useState('');
+  const [activeTab, setActiveTab] = useState<'settings' | 'backup'>('settings');
 
   useEffect(() => {
     loadSettings();
@@ -62,14 +64,46 @@ export function SettingsView() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Settings</h2>
-        <Button onClick={handleSave}>
-          <Save className="h-4 w-4 mr-2" />
-          Save Settings
-        </Button>
+    <div className="max-w-4xl">
+      {/* Fixed Tab Navigation */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 mb-6">
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mx-4 mt-4">
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'settings'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Settings
+          </button>
+          <button
+            onClick={() => setActiveTab('backup')}
+            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'backup'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Shield className="h-4 w-4 inline mr-2" />
+            Backup & Restore
+          </button>
+        </div>
       </div>
+
+      {/* Content Area */}
+      <div className="space-y-6 px-4">
+
+      {activeTab === 'settings' && (
+        <>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Settings</h2>
+            <Button onClick={handleSave}>
+              <Save className="h-4 w-4 mr-2" />
+              Save Settings
+            </Button>
+          </div>
 
       <Card>
         <CardHeader>
@@ -159,6 +193,16 @@ export function SettingsView() {
           </div>
         </CardContent>
       </Card>
+        </>
+      )}
+
+      {activeTab === 'backup' && (
+        <BackupManager onDataRestored={() => {
+          // Refresh the page or trigger a data reload
+          window.location.reload();
+        }} />
+      )}
+      </div>
     </div>
   );
 }

@@ -7,11 +7,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
-import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Session, Student } from '@/lib/types';
 import { getStudents, getSettings } from '@/lib/storage';
@@ -183,15 +181,6 @@ export function SessionDetailsDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex flex-row justify-end gap-2 sm:gap-2">
-          {session.status === 'scheduled' && (
-            <>
-              <Button variant="outline" onClick={() => onRequestEdit && onRequestEdit(session)}>Edit</Button>
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white">Cancel</Button>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Complete</Button>
-            </>
-          )}
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

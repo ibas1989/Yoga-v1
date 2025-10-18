@@ -139,17 +139,36 @@ export const getSessions = (): Session[] => {
 export const saveSession = (session: Session): void => {
   const sessions = getSessions();
   const index = sessions.findIndex(s => s.id === session.id);
+  const isNewSession = index < 0;
+  
   if (index >= 0) {
     sessions[index] = session;
   } else {
     sessions.push(session);
   }
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+  
+  // Dispatch custom events for real-time updates
+  if (typeof window !== 'undefined') {
+    if (isNewSession) {
+      window.dispatchEvent(new CustomEvent('sessionCreated', { detail: { session } }));
+    } else {
+      window.dispatchEvent(new CustomEvent('sessionUpdated', { detail: { sessionId: session.id, session } }));
+    }
+    // Also dispatch a general session change event for badge updates
+    window.dispatchEvent(new CustomEvent('sessionChanged', { detail: { session } }));
+  }
 };
 
 export const deleteSession = (sessionId: string): void => {
   const sessions = getSessions().filter(s => s.id !== sessionId);
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+  
+  // Dispatch custom event for real-time updates
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('sessionDeleted', { detail: { sessionId } }));
+    window.dispatchEvent(new CustomEvent('sessionChanged', { detail: { sessionId } }));
+  }
 };
 
 export const getSessionsForStudent = (studentId: string): Session[] => {
@@ -300,7 +319,8 @@ export const cancelSession = (sessionId: string): void => {
   
   // Dispatch custom event for real-time updates
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('sessionUpdated', { detail: { sessionId, session } }));
+    window.dispatchEvent(new CustomEvent('sessionCancelled', { detail: { sessionId, session } }));
+    window.dispatchEvent(new CustomEvent('sessionChanged', { detail: { session } }));
   }
 };
 
@@ -335,6 +355,7 @@ export const completeSession = (sessionId: string, confirmedAttendeeIds: string[
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('sessionUpdated', { detail: { sessionId, session } }));
     window.dispatchEvent(new CustomEvent('sessionCompleted', { detail: { sessionId, session } }));
+    window.dispatchEvent(new CustomEvent('sessionChanged', { detail: { session } }));
   }
 };
 

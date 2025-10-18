@@ -329,7 +329,12 @@ export default function StudentDetailsPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">Student not found. It may have been deleted.</p>
+                  <p className="text-muted-foreground">
+                    {studentError ? `Error: ${studentError}` : 'Student not found. It may have been deleted.'}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Student ID: {studentId}
+                  </p>
                   <Button onClick={() => router.push('/?view=students')} className="mt-4">
                     Return to Students
                   </Button>
