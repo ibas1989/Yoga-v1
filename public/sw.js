@@ -13,9 +13,7 @@ const urlsToCache = [
   '/icon-192.png',
   '/icon-192-maskable.png',
   '/icon-512.png',
-  '/icon-512-maskable.png',
-  '/_next/static/css/',
-  '/_next/static/js/'
+  '/icon-512-maskable.png'
 ];
 
 // Install event - cache resources
@@ -46,6 +44,11 @@ self.addEventListener('fetch', (event) => {
 
   // Skip chrome-extension and other non-http requests
   if (!event.request.url.startsWith('http')) {
+    return;
+  }
+
+  // Skip Next.js development server requests to avoid conflicts
+  if (event.request.url.includes('/_next/static/') && event.request.url.includes('localhost')) {
     return;
   }
 

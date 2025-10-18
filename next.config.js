@@ -25,6 +25,7 @@ const nextConfig = {
         fs: false,
       };
     }
+    
     return config;
   },
   // Add security headers (only in production)
@@ -100,4 +101,3 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-
