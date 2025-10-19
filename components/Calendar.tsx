@@ -9,6 +9,7 @@ import { Session } from '@/lib/types';
 import { getSessions } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 import { formatDateForUrl } from '@/lib/utils/dateUtils';
+// import { useMobileSwipe } from '@/lib/hooks/useMobileSwipe';
 
 interface CalendarProps {
   onDateSelect?: (date: Date) => void; // Made optional
@@ -20,6 +21,7 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     loadSessions();
@@ -53,11 +55,53 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
   };
 
   const previousMonth = () => {
+    setIsTransitioning(true);
     setCurrentMonth(subMonths(currentMonth, 1));
+    setTimeout(() => setIsTransitioning(false), 300);
   };
 
   const nextMonth = () => {
+    setIsTransitioning(true);
     setCurrentMonth(addMonths(currentMonth, 1));
+    setTimeout(() => setIsTransitioning(false), 300);
+  };
+
+  // Swipe gesture handlers
+  const handleSwipeLeft = () => {
+    nextMonth();
+  };
+
+  const handleSwipeRight = () => {
+    previousMonth();
+  };
+
+  // Simple swipe gesture implementation without external hook
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      handleSwipeLeft();
+    }
+    if (isRightSwipe) {
+      handleSwipeRight();
+    }
   };
 
   // Generate years array (current year ±5 years)
@@ -85,41 +129,75 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
     setCurrentMonth(updatedMonth);
   };
 
+
   return (
     <div className="w-full h-screen flex flex-col overflow-hidden">
       {/* Navigation Selectors Section */}
       <div className="fixed top-4 left-4 right-4 z-10 border border-border rounded-lg p-2" style={{ backgroundColor: '#2563eb' }}>
-        <div className="flex items-center justify-center gap-4">
-          <Select value={getYear(currentMonth).toString()} onValueChange={handleYearChange}>
-            <SelectTrigger className="w-[80px] sm:w-[90px] h-8 text-sm font-bold">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {years.map(year => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={format(currentMonth, 'MMMM')} onValueChange={handleMonthChange}>
-            <SelectTrigger className="w-[100px] sm:w-[110px] h-8 text-sm font-bold">
-              <SelectValue placeholder="Month" />
-            </SelectTrigger>
-            <SelectContent>
-              {months.map(month => (
-                <SelectItem key={month} value={month}>
-                  {month}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-center justify-between">
+          {/* Previous Month Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={previousMonth}
+            className="h-8 w-8 p-0 text-white hover:bg-white/20"
+            disabled={isTransitioning}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          {/* Month/Year Selectors */}
+          <div className="flex items-center gap-4">
+            <Select value={getYear(currentMonth).toString()} onValueChange={handleYearChange}>
+              <SelectTrigger className="w-[80px] sm:w-[90px] h-8 text-sm font-bold">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map(year => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={format(currentMonth, 'MMMM')} onValueChange={handleMonthChange}>
+              <SelectTrigger className="w-[100px] sm:w-[110px] h-8 text-sm font-bold">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map(month => (
+                  <SelectItem key={month} value={month}>
+                    {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Next Month Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={nextMonth}
+            className="h-8 w-8 p-0 text-white hover:bg-white/20"
+            disabled={isTransitioning}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
       {/* Calendar Grid Section */}
-      <div className="fixed top-20 left-4 right-4 bottom-4 z-10 bg-background border border-border rounded-lg p-0">
+      <div 
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        className={cn(
+          "fixed top-20 left-4 right-4 bottom-4 z-10 bg-background border border-border rounded-lg p-0 transition-all duration-300 ease-in-out",
+          isTransitioning && "opacity-70 scale-98"
+        )}
+      >
         <div className="grid grid-cols-7 gap-2 mb-0">
           {weekDays.map(day => (
             <div

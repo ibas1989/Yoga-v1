@@ -15,7 +15,19 @@ const nextConfig = {
   // Fix for Next.js 15 static file serving
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    ...(process.env.NODE_ENV === 'development' && {
+      forceSwcTransforms: true,
+    }),
   },
+  // Fix static asset serving issues
+  assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
+  // Ensure proper static file handling
+  outputFileTracing: false,
+  // Fix for Next.js 15 static file serving
+  distDir: '.next',
+  // Fix for Next.js 15 static asset serving
+  skipTrailingSlashRedirect: true,
+  skipMiddlewareUrlNormalize: true,
   // Add security headers (only in production)
   async headers() {
     // Only apply strict CSP in production
