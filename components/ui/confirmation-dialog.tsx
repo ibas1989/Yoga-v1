@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { AlertTriangle, Trash2, Edit2, Save } from 'lucide-react';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 import { Button } from './button';
 import {
   Dialog,
@@ -142,14 +143,16 @@ export function DeleteConfirmationDialog({
   onConfirm: () => void;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
+  
   return (
     <ConfirmationDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Delete Confirmation"
-      description={`Are you sure you want to delete this ${itemName}? This action cannot be undone.`}
-      confirmText="Delete"
-      cancelText="Cancel"
+      title={t('deleteConfirmation.title')}
+      description={t('deleteConfirmation.description', { itemName })}
+      confirmText={t('deleteConfirmation.confirm')}
+      cancelText={t('deleteConfirmation.cancel')}
       variant="destructive"
       onConfirm={onConfirm}
       isLoading={isLoading}
@@ -170,14 +173,16 @@ export function UpdateConfirmationDialog({
   onConfirm: () => void;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
+  
   return (
     <ConfirmationDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Save Changes"
-      description={`Are you sure you want to save the changes to this ${itemName}?`}
-      confirmText="Save"
-      cancelText="Cancel"
+      title={t('updateConfirmation.title')}
+      description={t('updateConfirmation.description', { itemName })}
+      confirmText={t('updateConfirmation.confirm')}
+      cancelText={t('updateConfirmation.cancel')}
       variant="default"
       icon={<Save className="h-6 w-6 text-blue-500" />}
       onConfirm={onConfirm}
@@ -216,16 +221,18 @@ export function UnsavedChangesConfirmationDialog({
     onOpenChange(newOpen);
   };
 
+  const { t } = useTranslation();
+  
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <AlertTriangle className="h-6 w-6 text-yellow-500" />
-            Unsaved Changes
+            {t('unsavedChangesConfirmation.title')}
           </DialogTitle>
           <DialogDescription className="text-left">
-            You have unsaved changes. Are you sure you want to close this note?
+            {t('unsavedChangesConfirmation.description')}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
@@ -234,7 +241,7 @@ export function UnsavedChangesConfirmationDialog({
             onClick={handleCancel}
             disabled={isLoading}
           >
-            No
+            {t('unsavedChangesConfirmation.cancel')}
           </Button>
           <Button
             variant="default"
@@ -244,10 +251,10 @@ export function UnsavedChangesConfirmationDialog({
             {isLoading ? (
               <div className="flex items-center gap-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Processing...
+                {t('common.loading')}
               </div>
             ) : (
-              'Yes'
+              t('unsavedChangesConfirmation.confirm')
             )}
           </Button>
         </DialogFooter>

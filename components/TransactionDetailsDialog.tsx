@@ -14,6 +14,7 @@ import {
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { BalanceTransaction } from '@/lib/types';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 interface TransactionDetailsDialogProps {
   open: boolean;
@@ -26,6 +27,7 @@ export function TransactionDetailsDialog({
   onOpenChange,
   transaction,
 }: TransactionDetailsDialogProps) {
+  const { t, getCurrentLanguage } = useTranslation();
   if (!transaction) return null;
 
   const getTransactionTypeBadge = (type: BalanceTransaction['transactionType']) => {
@@ -36,7 +38,7 @@ export function TransactionDetailsDialog({
 
     return (
       <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${styles[type]}`}>
-        {type === 'added' ? 'Added' : 'Deducted'}
+        {type === 'added' ? t('transactionDetails.added') : t('transactionDetails.deducted')}
       </span>
     );
   };
@@ -56,11 +58,8 @@ export function TransactionDetailsDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle>Transaction Details</DialogTitle>
+            <DialogTitle>{t('transactionDetails.title')}</DialogTitle>
           </div>
-          <DialogDescription>
-            {format(new Date(transaction.date), 'EEEE, MMMM d, yyyy')}
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -69,9 +68,14 @@ export function TransactionDetailsDialog({
             <div className="flex items-start gap-3">
               <CalendarIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium">Date</p>
+                <p className="text-sm font-medium">{t('transactionDetails.date')}</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(transaction.date), 'EEEE, MMMM d, yyyy')}
+                  {new Date(transaction.date).toLocaleDateString(getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
                 </p>
               </div>
             </div>
@@ -79,9 +83,13 @@ export function TransactionDetailsDialog({
             <div className="flex items-start gap-3">
               <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium">Time</p>
+                <p className="text-sm font-medium">{t('transactionDetails.time')}</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(transaction.date), 'h:mm a')}
+                  {new Date(transaction.date).toLocaleTimeString(getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  })}
                 </p>
               </div>
             </div>
@@ -98,9 +106,9 @@ export function TransactionDetailsDialog({
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Transaction Type</p>
+                    <p className="text-sm font-medium">{t('transactionDetails.transactionType')}</p>
                     <p className="text-sm text-muted-foreground">
-                      {transaction.transactionType === 'added' ? 'Balance Added' : 'Balance Deducted'}
+                      {transaction.transactionType === 'added' ? t('transactionDetails.balanceAdded') : t('transactionDetails.balanceDeducted')}
                     </p>
                   </div>
                   <div className="ml-3 shrink-0">
@@ -113,9 +121,9 @@ export function TransactionDetailsDialog({
             <div className="flex items-start gap-3">
               <Wallet className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium">Change Amount</p>
+                <p className="text-sm font-medium">{t('transactionDetails.changeAmount')}</p>
                 <p className={`text-sm font-medium ${getChangeAmountColor(transaction.changeAmount)}`}>
-                  {transaction.changeAmount > 0 ? `+${transaction.changeAmount}` : transaction.changeAmount} sessions
+                  {transaction.changeAmount > 0 ? `+${transaction.changeAmount}` : transaction.changeAmount} {Math.abs(transaction.changeAmount) === 1 ? t('transactionDetails.session') : t('transactionDetails.sessions')}
                 </p>
               </div>
             </div>
@@ -125,12 +133,22 @@ export function TransactionDetailsDialog({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-muted-foreground" />
-              <p className="text-sm font-medium">Reason / Description</p>
+              <p className="text-sm font-medium">{t('transactionDetails.reasonDescription')}</p>
             </div>
             <Card className="ml-7">
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground break-words whitespace-pre-wrap">
-                  {transaction.reason || 'No description provided'}
+                  {(() => {
+                    // Display the appropriate language version based on current language
+                    const currentLanguage = getCurrentLanguage();
+                    if (currentLanguage === 'ru' && transaction.reasonRu) {
+                      return transaction.reasonRu;
+                    } else if (currentLanguage === 'en' && transaction.reasonEn) {
+                      return transaction.reasonEn;
+                    }
+                    // Fallback to the default reason field
+                    return transaction.reason || t('transactionDetails.noDescriptionProvided');
+                  })()}
                 </p>
               </CardContent>
             </Card>
@@ -140,15 +158,15 @@ export function TransactionDetailsDialog({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Wallet className="h-5 w-5 text-muted-foreground" />
-              <p className="text-sm font-medium">Updated Balance</p>
+              <p className="text-sm font-medium">{t('transactionDetails.updatedBalance')}</p>
             </div>
             <Card className="ml-7">
               <CardContent className="p-4">
                 <p className={`text-sm font-medium ${getBalanceAfterColor(transaction.balanceAfter)}`}>
-                  {transaction.balanceAfter > 0 ? `+${transaction.balanceAfter}` : transaction.balanceAfter} sessions
+                  {transaction.balanceAfter > 0 ? `+${transaction.balanceAfter}` : transaction.balanceAfter} {Math.abs(transaction.balanceAfter) === 1 ? t('transactionDetails.session') : t('transactionDetails.sessions')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Balance after this transaction
+                  {t('transactionDetails.balanceAfterTransaction')}
                 </p>
               </CardContent>
             </Card>
@@ -159,7 +177,7 @@ export function TransactionDetailsDialog({
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <CalendarIcon className="h-4 w-4" />
               <span>
-                Transaction ID: {transaction.id}
+                {t('transactionDetails.transactionId')}: {transaction.id}
               </span>
             </div>
           </div>
@@ -167,7 +185,7 @@ export function TransactionDetailsDialog({
 
         <DialogFooter className="flex flex-row justify-end gap-2 sm:gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {t('transactionDetails.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

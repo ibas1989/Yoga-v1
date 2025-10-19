@@ -12,6 +12,8 @@ export interface BalanceTransaction {
   transactionType: 'added' | 'deducted';
   changeAmount: number; // Positive for added, negative for deducted
   reason: string;
+  reasonEn?: string; // English version of reason
+  reasonRu?: string; // Russian version of reason
   balanceAfter: number;
 }
 

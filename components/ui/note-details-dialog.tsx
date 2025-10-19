@@ -15,6 +15,7 @@ import { Button } from './button';
 import { StudentNote } from '@/lib/types';
 import { updateStudentNote, deleteStudentNote } from '@/lib/storage';
 import { ConfirmationDialog } from './confirmation-dialog';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 interface NoteDetailsDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ export function NoteDetailsDialog({
   onNoteUpdated,
   onNoteChanged,
 }: NoteDetailsDialogProps) {
+  const { t, getCurrentLanguage } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -170,7 +172,7 @@ export function NoteDetailsDialog({
     : rawContent;
 
   const formatDate = (date: Date | string | null | undefined) => {
-    if (!date) return 'Not specified';
+    if (!date) return t('studentDetails.notSpecified');
     
     // Convert to Date object if it's a string
     const dateObj = date instanceof Date ? date : new Date(date);
@@ -178,7 +180,8 @@ export function NoteDetailsDialog({
     // Check if the date is valid
     if (isNaN(dateObj.getTime())) return 'Invalid date';
     
-    return dateObj.toLocaleDateString('en-US', {
+    const locale = getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US';
+    return dateObj.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -186,7 +189,7 @@ export function NoteDetailsDialog({
   };
 
   const formatTime = (date: Date | string | null | undefined) => {
-    if (!date) return 'Not specified';
+    if (!date) return t('studentDetails.notSpecified');
     
     // Convert to Date object if it's a string
     const dateObj = date instanceof Date ? date : new Date(date);
@@ -194,9 +197,11 @@ export function NoteDetailsDialog({
     // Check if the date is valid
     if (isNaN(dateObj.getTime())) return 'Invalid time';
     
-    return dateObj.toLocaleTimeString('en-US', {
+    const locale = getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US';
+    return dateObj.toLocaleTimeString(locale, {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     });
   };
 
@@ -205,9 +210,9 @@ export function NoteDetailsDialog({
       <Dialog open={open && forceDialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>Note Details</DialogTitle>
+            <DialogTitle>{t('studentDetails.noteDetails')}</DialogTitle>
             <DialogDescription>
-              View and edit note details. You can modify the content or delete this note.
+              {t('studentDetails.noteDetailsDescription')}
             </DialogDescription>
           </DialogHeader>
 
@@ -221,7 +226,7 @@ export function NoteDetailsDialog({
                     name="note-edit-content"
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
-                    placeholder="Edit note content..."
+                    placeholder={t('studentDetails.editNoteContent')}
                     maxLength={2000}
                     className="w-full min-h-[200px] px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-vertical"
                     style={{ whiteSpace: 'pre-wrap' }}
@@ -246,10 +251,10 @@ export function NoteDetailsDialog({
 
             {/* Created timestamp */}
             <div className="text-xs text-muted-foreground">
-              Created: {formatDate(localNote.timestamp)} at {formatTime(localNote.timestamp)}
+              {t('studentDetails.created')}: {formatDate(localNote.timestamp)} {t('common.at')} {formatTime(localNote.timestamp)}
               {localNote.updatedAt && (
                 <div className="mt-1">
-                  Updated: {formatDate(localNote.updatedAt)} at {formatTime(localNote.updatedAt)}
+                  {t('studentDetails.updated')}: {formatDate(localNote.updatedAt)} {t('common.at')} {formatTime(localNote.updatedAt)}
                 </div>
               )}
             </div>
@@ -263,7 +268,7 @@ export function NoteDetailsDialog({
               className="flex items-center gap-2"
             >
               <Trash2 className="h-4 w-4" />
-              Delete
+              {t('common.delete')}
             </Button>
             <Button 
               onClick={isEditing ? handleSave : handleEdit}
@@ -277,7 +282,7 @@ export function NoteDetailsDialog({
               ) : (
                 <Edit2 className="h-4 w-4" />
               )}
-              {isEditing ? 'Save' : 'Edit'}
+              {isEditing ? t('common.save') : t('common.edit')}
             </Button>
           </div>
       </DialogContent>
@@ -287,10 +292,10 @@ export function NoteDetailsDialog({
       <ConfirmationDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        title="Delete Note"
-        description="Are you sure you want to delete this note? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('common.delete')}
+        description={t('studentDetails.deleteNoteDescription')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         onConfirm={handleDelete}
         onCancel={() => {
           setShowDeleteConfirm(false);
@@ -320,10 +325,10 @@ export function NoteDetailsDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <AlertTriangle className="h-6 w-6 text-yellow-500" />
-              Unsaved Changes
+              {t('sessions.unsavedChanges')}
             </DialogTitle>
             <DialogDescription className="text-left">
-              You have unsaved changes. Are you sure you want to close this note?
+              {t('studentDetails.unsavedNoteChangesDescription')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
@@ -336,14 +341,14 @@ export function NoteDetailsDialog({
               }}
               disabled={false}
             >
-              No
+              {t('common.no')}
             </Button>
             <Button
               variant="default"
               onClick={handleCloseConfirmed}
               disabled={false}
             >
-              Yes
+              {t('common.yes')}
             </Button>
           </DialogFooter>
         </DialogContent>

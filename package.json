@@ -15,6 +15,7 @@
     "test-build": "npm run type-check && npm run lint && npm run build",
     "clean": "rm -rf .next out dist deployment-package.tar.gz",
     "health-check": "node scripts/health-check.js",
+    "validate-translations": "node scripts/validate-translations.js",
     "post-change": "npm run auto-validate"
   },
   "dependencies": {
@@ -31,11 +32,14 @@
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
     "googleapis": "^144.0.0",
+    "i18next": "^25.6.0",
+    "i18next-browser-languagedetector": "^8.2.0",
     "lucide-react": "^0.546.0",
     "next": "^15.5.6",
     "postcss": "^8.4.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-i18next": "^16.1.0",
     "tailwind-merge": "^2.2.0",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.4.0"

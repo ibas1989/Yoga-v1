@@ -9,6 +9,7 @@ import { Session } from '@/lib/types';
 import { getSessions } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 import { formatDateForUrl } from '@/lib/utils/dateUtils';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 // import { useMobileSwipe } from '@/lib/hooks/useMobileSwipe';
 
 interface CalendarProps {
@@ -18,6 +19,7 @@ interface CalendarProps {
 }
 
 export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: CalendarProps) {
+  const { t } = useTranslation();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -115,12 +117,30 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
   };
 
 
-  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weekDays = [
+    t('calendar.weekDays.monday'),
+    t('calendar.weekDays.tuesday'),
+    t('calendar.weekDays.wednesday'),
+    t('calendar.weekDays.thursday'),
+    t('calendar.weekDays.friday'),
+    t('calendar.weekDays.saturday'),
+    t('calendar.weekDays.sunday')
+  ];
 
   // Generate months array
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    t('calendar.months.january'),
+    t('calendar.months.february'),
+    t('calendar.months.march'),
+    t('calendar.months.april'),
+    t('calendar.months.may'),
+    t('calendar.months.june'),
+    t('calendar.months.july'),
+    t('calendar.months.august'),
+    t('calendar.months.september'),
+    t('calendar.months.october'),
+    t('calendar.months.november'),
+    t('calendar.months.december')
   ];
 
   const handleMonthChange = (monthStr: string) => {
@@ -150,7 +170,7 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
           <div className="flex items-center gap-4">
             <Select value={getYear(currentMonth).toString()} onValueChange={handleYearChange}>
               <SelectTrigger className="w-[80px] sm:w-[90px] h-8 text-sm font-bold">
-                <SelectValue placeholder="Year" />
+                <SelectValue placeholder={t('calendar.year')} />
               </SelectTrigger>
               <SelectContent>
                 {years.map(year => (
@@ -161,9 +181,9 @@ export function Calendar({ onDateSelect, onSessionClick, refreshTrigger }: Calen
               </SelectContent>
             </Select>
             
-            <Select value={format(currentMonth, 'MMMM')} onValueChange={handleMonthChange}>
-              <SelectTrigger className="w-[100px] sm:w-[110px] h-8 text-sm font-bold">
-                <SelectValue placeholder="Month" />
+            <Select value={months[currentMonth.getMonth()]} onValueChange={handleMonthChange}>
+              <SelectTrigger className="w-[120px] sm:w-[130px] h-8 text-sm font-bold">
+                <SelectValue placeholder={t('calendar.month')} />
               </SelectTrigger>
               <SelectContent>
                 {months.map(month => (

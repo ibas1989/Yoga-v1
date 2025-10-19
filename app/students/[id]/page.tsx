@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Edit, User, Phone, Wallet, Target, Calendar, Clock, Plus, Trash2, Weight, Ruler, Cake, FileText, Loader2, Edit2, Save, X } from 'lucide-react';
+import { Edit, User, Phone, Wallet, Target, Calendar, Clock, Plus, Trash2, Weight, Ruler, Cake, FileText, Loader2, Edit2, Save, X, StickyNote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContextualBar } from '@/components/ui/contextual-bar';
@@ -17,10 +17,45 @@ import { TransactionDetailsDialog } from '@/components/TransactionDetailsDialog'
 import { NoteDetailsDialog } from '@/components/ui/note-details-dialog';
 import { DeleteConfirmationDialog, UpdateConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { NewNoteDialog } from '@/components/NewNoteDialog';
-import { formatBalanceForDisplay, getAgeInYearsAndMonths, getMemberSinceAge, getSessionTypeDisplayName, getSessionCount } from '@/lib/utils/dateUtils';
+import { formatBalanceForDisplay, getAgeInYearsAndMonths, getMemberSinceAge, getSessionTypeDisplayName, getSessionCount, getAgeInYearsAndMonthsTranslated, getMemberSinceAgeTranslated, formatDateLocalized } from '@/lib/utils/dateUtils';
+
+// Custom formatting functions for the new layout
+const formatDateForTable = (date: Date | string | null | undefined) => {
+  if (!date) return { dayMonth: 'Not specified', year: '' };
+  const dateObj = date instanceof Date ? date : new Date(date);
+  if (isNaN(dateObj.getTime())) return { dayMonth: 'Invalid date', year: '' };
+  
+  const day = dateObj.getDate();
+  const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+  const year = dateObj.getFullYear();
+  
+  return {
+    dayMonth: `${day} ${month}`,
+    year: year.toString()
+  };
+};
+
+const formatTimeForTable = (timeString: string | null | undefined) => {
+  if (!timeString) return { startTime: 'Not specified', endTime: '' };
+  
+  if (timeString.includes('-')) {
+    const [start, end] = timeString.split(' - ');
+    return {
+      startTime: start || 'Not specified',
+      endTime: end || ''
+    };
+  } else {
+    return {
+      startTime: timeString,
+      endTime: ''
+    };
+  }
+};
 import { useMobileSwipe } from '@/lib/hooks/useMobileSwipe';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 export default function StudentDetailsPage() {
+  const { t, ready, getCurrentLanguage } = useTranslation();
   const router = useRouter();
   const params = useParams();
   const studentId = params.id as string;
@@ -78,6 +113,17 @@ export default function StudentDetailsPage() {
     }
   }, [studentId]);
 
+  // Wait for i18n to be ready before rendering
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading translations...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleEdit = () => {
     router.push(`/students/${studentId}/edit`);
@@ -124,10 +170,11 @@ export default function StudentDetailsPage() {
   };
 
   const formatDate = (date: Date | string | null | undefined) => {
-    if (!date) return 'Not specified';
+    if (!date) return t('studentDetails.notSpecified');
     const dateObj = date instanceof Date ? date : new Date(date);
     if (isNaN(dateObj.getTime())) return 'Invalid date';
-    return new Intl.DateTimeFormat('en-US', {
+    const locale = getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US';
+    return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -135,12 +182,14 @@ export default function StudentDetailsPage() {
   };
 
   const formatTime = (date: Date | string | null | undefined) => {
-    if (!date) return 'Not specified';
+    if (!date) return t('studentDetails.notSpecified');
     const dateObj = date instanceof Date ? date : new Date(date);
     if (isNaN(dateObj.getTime())) return 'Invalid time';
-    return new Intl.DateTimeFormat('en-US', {
+    const locale = getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US';
+    return new Intl.DateTimeFormat(locale, {
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false,
     }).format(dateObj);
   };
 
@@ -295,9 +344,9 @@ export default function StudentDetailsPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground animate-spin" />
-          <h3 className="text-lg font-semibold mb-2">Loading student details...</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('studentDetails.loadingStudentDetails')}</h3>
           <p className="text-sm text-muted-foreground">
-            Please wait while we fetch the student information.
+            {t('studentDetails.pleaseWaitFetchStudent')}
           </p>
         </div>
       </div>
@@ -317,7 +366,7 @@ export default function StudentDetailsPage() {
                 onClick={() => router.push('/?view=students')}
                 className="flex items-center gap-2"
               >
-                ← Back
+                ← {t('studentDetails.back')}
               </Button>
             </div>
           </div>
@@ -330,13 +379,13 @@ export default function StudentDetailsPage() {
               <CardContent className="pt-6">
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">
-                    {studentError ? `Error: ${studentError}` : 'Student not found. It may have been deleted.'}
+                    {studentError ? `Error: ${studentError}` : t('studentDetails.studentNotFound')}
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Student ID: {studentId}
+                    {t('studentDetails.studentId')}: {studentId}
                   </p>
                   <Button onClick={() => router.push('/?view=students')} className="mt-4">
-                    Return to Students
+                    {t('studentDetails.returnToStudents')}
                   </Button>
                 </div>
               </CardContent>
@@ -359,7 +408,7 @@ export default function StudentDetailsPage() {
               onClick={() => router.push('/?view=students')}
               className="flex items-center gap-2"
             >
-              ← Back
+              ← {t('studentDetails.back')}
             </Button>
             <div className="flex items-center gap-2">
               <Button 
@@ -373,11 +422,11 @@ export default function StudentDetailsPage() {
                 ) : (
                   <Trash2 className="h-4 w-4 mr-2" />
                 )}
-                Delete
+                {t('studentDetails.delete')}
               </Button>
               <Button onClick={handleEdit} size="sm">
                 <Edit className="h-4 w-4 mr-2" />
-                Edit
+                {t('studentDetails.edit')}
               </Button>
             </div>
           </div>
@@ -398,67 +447,67 @@ export default function StudentDetailsPage() {
           {/* Personal Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Personal Information</CardTitle>
+              <CardTitle className="text-lg">{t('studentDetails.personalInformation')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Name</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('studentDetails.name')}</Label>
                   <p className="text-sm">{currentStudent.name}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('studentDetails.phone')}</Label>
                   <p className="text-sm flex items-center">
                     <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                    {currentStudent.phone || 'No phone'}
+                    {currentStudent.phone || t('studentDetails.noPhone')}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Weight</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('studentDetails.weight')}</Label>
                   <p className="text-sm flex items-center">
                     <Weight className="h-4 w-4 mr-2 text-muted-foreground" />
-                    {currentStudent.weight ? `${currentStudent.weight} kg` : 'Not specified'}
+                    {currentStudent.weight ? `${currentStudent.weight} ${t('common.kg')}` : t('studentDetails.notSpecified')}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Height</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('studentDetails.height')}</Label>
                   <p className="text-sm flex items-center">
                     <Ruler className="h-4 w-4 mr-2 text-muted-foreground" />
-                    {currentStudent.height ? `${currentStudent.height} cm` : 'Not specified'}
+                    {currentStudent.height ? `${currentStudent.height} ${t('common.cm')}` : t('studentDetails.notSpecified')}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Age</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('studentDetails.age')}</Label>
                   <p className="text-sm">
-                    {getAgeInYearsAndMonths(currentStudent.birthday)}
+                    {getAgeInYearsAndMonthsTranslated(currentStudent.birthday, t)}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Birthday</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('studentDetails.birthday')}</Label>
                   <p className="text-sm flex items-center">
                     <Cake className="h-4 w-4 mr-2 text-muted-foreground" />
-                    {currentStudent.birthday ? formatDate(currentStudent.birthday) : 'Not specified'}
+                    {currentStudent.birthday ? formatDateLocalized(currentStudent.birthday, getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US') : t('studentDetails.notSpecified')}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Member Since</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('studentDetails.memberSince')}</Label>
                   <p className="text-sm flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                    {currentStudent.memberSince ? formatDate(currentStudent.memberSince) : 'Not specified'}
+                    {currentStudent.memberSince ? formatDateLocalized(currentStudent.memberSince, getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US') : t('studentDetails.notSpecified')}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Member Since Age</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('studentDetails.memberSinceAge')}</Label>
                   <p className="text-sm">
-                    {getMemberSinceAge(currentStudent.memberSince)}
+                    {getMemberSinceAgeTranslated(currentStudent.memberSince, t)}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Current Balance</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t('studentDetails.currentBalance')}</Label>
                   <p className={`text-sm font-medium ${
                     currentStudent.balance > 0 ? 'text-red-600' : currentStudent.balance < 0 ? 'text-green-600' : 'text-gray-600'
                   }`}>
-                    {currentStudent.balance > 0 ? `+${formatBalanceForDisplay(currentStudent.balance)}` : formatBalanceForDisplay(currentStudent.balance)} sessions
+                    {currentStudent.balance > 0 ? `+${formatBalanceForDisplay(currentStudent.balance)}` : formatBalanceForDisplay(currentStudent.balance)} {Math.abs(currentStudent.balance) === 1 ? t('calendar.sessions.session') : t('calendar.sessions.sessions')}
                   </p>
                   <Button 
                     type="button"
@@ -473,7 +522,7 @@ export default function StudentDetailsPage() {
                     ) : (
                       <Plus className="h-3 w-3 mr-1" />
                     )}
-                    Add Balance Transaction
+                    {t('studentDetails.addBalanceTransaction')}
                   </Button>
                 </div>
               </div>
@@ -485,13 +534,13 @@ export default function StudentDetailsPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center">
                 <FileText className="h-5 w-5 mr-2" />
-                Description
+                {t('studentDetails.description')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-[200px] overflow-y-auto border rounded-md p-3 bg-gray-50">
                 <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
-                  {currentStudent.description || 'No description provided'}
+                  {currentStudent.description || t('studentDetails.noDescriptionProvided')}
                 </p>
               </div>
             </CardContent>
@@ -501,8 +550,8 @@ export default function StudentDetailsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center">
-                <FileText className="h-5 w-5 mr-2" />
-                Notes
+                <StickyNote className="h-5 w-5 mr-2" />
+                {t('studentDetails.notes')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -514,7 +563,7 @@ export default function StudentDetailsPage() {
                   disabled={isNoteSaving}
                 >
                   <Plus className="h-4 w-4" />
-                  Add a Note
+                  {t('studentDetails.addNote')}
                 </Button>
               </div>
 
@@ -533,7 +582,7 @@ export default function StudentDetailsPage() {
                               value={editingNoteContent}
                               onChange={(e) => setEditingNoteContent(e.target.value)}
                               className="w-full min-h-[60px] px-3 py-2 border border-input bg-background rounded-md text-sm"
-                              placeholder="Edit note content..."
+                              placeholder={t('studentDetails.editNoteContent')}
                             />
                             <div className="flex space-x-2">
                               <Button size="sm" onClick={handleSaveNote} disabled={isNoteSaving}>
@@ -542,11 +591,11 @@ export default function StudentDetailsPage() {
                                 ) : (
                                   <Save className="h-3 w-3 mr-1" />
                                 )}
-                                Save
+                                {t('studentDetails.save')}
                               </Button>
                               <Button size="sm" variant="outline" onClick={handleCancelEditNote} disabled={isNoteSaving}>
                                 <X className="h-3 w-3 mr-1" />
-                                Cancel
+                                {t('studentDetails.cancel')}
                               </Button>
                             </div>
                           </div>
@@ -566,7 +615,7 @@ export default function StudentDetailsPage() {
                                       {truncated}
                                       {isTruncated && (
                                         <div className="text-blue-600 text-xs mt-2 font-medium">
-                                          Click to view full content...
+                                          {t('studentDetails.clickToViewFull')}
                                         </div>
                                       )}
                                     </>
@@ -578,11 +627,11 @@ export default function StudentDetailsPage() {
                             {/* Created and Updated dates */}
                             <div className="text-right">
                               <p className="text-xs text-muted-foreground">
-                                Created: {formatDate(note.timestamp)} at {formatTime(note.timestamp)}
+                                {t('studentDetails.created')}: {formatDate(note.timestamp)} {t('common.at')} {formatTime(note.timestamp)}
                               </p>
                               {note.updatedAt && (
                                 <p className="text-xs text-muted-foreground">
-                                  Updated: {formatDate(note.updatedAt)} at {formatTime(note.updatedAt)}
+                                  {t('studentDetails.updated')}: {formatDate(note.updatedAt)} {t('common.at')} {formatTime(note.updatedAt)}
                                 </p>
                               )}
                             </div>
@@ -592,7 +641,7 @@ export default function StudentDetailsPage() {
                     ))
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    No notes yet. Click &quot;Add a Note&quot; to create your first note.
+                    {t('studentDetails.noNotesYet')}
                   </p>
                 )}
               </div>
@@ -604,7 +653,7 @@ export default function StudentDetailsPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center">
                 <Target className="h-5 w-5 mr-2" />
-                Goals & Focus Areas
+                {t('studentDetails.goalsFocusAreas')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -619,7 +668,7 @@ export default function StudentDetailsPage() {
                     </span>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">No goals set</p>
+                  <p className="text-sm text-muted-foreground">{t('studentDetails.noGoalsSet')}</p>
                 )}
               </div>
             </CardContent>
@@ -630,7 +679,7 @@ export default function StudentDetailsPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center">
                 <Wallet className="h-5 w-5 mr-2" />
-                Balance Transaction History ({currentStudent.balanceTransactions?.length || 0})
+                {t('studentDetails.balanceTransactionHistory')} ({currentStudent.balanceTransactions?.length || 0})
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -640,38 +689,46 @@ export default function StudentDetailsPage() {
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left p-3 font-medium">Date & Time</th>
-                          <th className="text-left p-3 font-medium">Change Amount</th>
-                          <th className="text-left p-3 font-medium">Updated Balance</th>
+                          <th className="text-top text-left p-3 font-medium">{t('studentDetails.dateTime')}</th>
+                          <th className="text-top text-center p-3 font-medium">{t('studentDetails.changeAmount')}</th>
+                          <th className="text-top text-center p-3 font-medium">{t('studentDetails.updatedBalance')}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {getPaginatedBalanceTransactions().map((transaction) => (
                           <tr key={transaction.id} className="border-b hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => handleTransactionClick(transaction)}>
-                            <td className="p-3">
+                            <td className="p-3 text-left">
                               <div className="space-y-1">
                                 <div className="flex items-center text-sm">
-                                  <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-                                  {formatDate(transaction.date)}
+                                  <Calendar className="mr-1 text-muted-foreground flex-shrink-0" style={{ width: '16px', height: '16px', minWidth: '16px', minHeight: '16px', maxWidth: '16px', maxHeight: '16px' }} />
+                                  <div className="flex flex-col">
+                                    <span>{formatDateForTable(transaction.date).dayMonth}</span>
+                                    <span className="text-muted-foreground text-xs">{formatDateForTable(transaction.date).year}</span>
+                                  </div>
                                 </div>
                                 <div className="flex items-center text-sm text-muted-foreground">
-                                  <Clock className="h-4 w-4 mr-1" />
-                                  {formatTime(transaction.date)}
+                                  <Clock className="mr-1 text-muted-foreground flex-shrink-0" style={{ width: '16px', height: '16px', minWidth: '16px', minHeight: '16px', maxWidth: '16px', maxHeight: '16px' }} />
+                                  <div className="flex flex-col">
+                                    <span>{formatTimeForTable(formatTime(transaction.date)).startTime}</span>
+                                    {formatTimeForTable(formatTime(transaction.date)).endTime && (
+                                      <span className="text-xs">{formatTimeForTable(formatTime(transaction.date)).endTime}</span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </td>
-                            <td className="p-3">
+                            <td className="p-3 text-center">
                               <span className={`text-sm font-medium ${
                                 transaction.changeAmount > 0 ? 'text-green-600' : 'text-red-600'
                               }`}>
-                                {transaction.changeAmount > 0 ? `+${transaction.changeAmount}` : transaction.changeAmount} sessions
+                                {transaction.changeAmount > 0 ? `+${transaction.changeAmount}` : transaction.changeAmount} {Math.abs(transaction.changeAmount) === 1 ? t('calendar.sessions.session') : t('calendar.sessions.sessions')}
                               </span>
                             </td>
-                            <td className="p-3">
+                            <td className="p-3 text-center">
                               <span className={`text-sm font-medium ${
                                 transaction.balanceAfter > 0 ? 'text-green-600' : transaction.balanceAfter < 0 ? 'text-red-600' : 'text-gray-600'
                               }`}>
-                                {transaction.balanceAfter > 0 ? `+${transaction.balanceAfter}` : transaction.balanceAfter} sessions
+                                {transaction.balanceAfter > 0 ? `+${transaction.balanceAfter}` : transaction.balanceAfter} {Math.abs(transaction.balanceAfter) === 1 ? t('calendar.sessions.session') : t('calendar.sessions.sessions')}
                               </span>
                             </td>
                           </tr>
@@ -693,7 +750,7 @@ export default function StudentDetailsPage() {
                           ←
                         </Button>
                         <span className="text-sm text-muted-foreground px-2 py-1">
-                          Page {balanceTransactionPage} of {getTotalTransactionPages()}
+                          {t('studentDetails.page')} {balanceTransactionPage} {t('studentDetails.of')} {getTotalTransactionPages()}
                         </span>
                         <Button
                           variant="outline"
@@ -708,7 +765,7 @@ export default function StudentDetailsPage() {
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">No balance transactions recorded yet</p>
+                <p className="text-sm text-muted-foreground text-center py-8">{t('studentDetails.noBalanceTransactions')}</p>
               )}
             </CardContent>
           </Card>
@@ -718,7 +775,7 @@ export default function StudentDetailsPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center">
                 <Calendar className="h-5 w-5 mr-2" />
-                Session History ({studentSessions.length})
+                {t('studentDetails.sessionHistory')} ({studentSessions.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -728,9 +785,9 @@ export default function StudentDetailsPage() {
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left p-3 font-medium">Date & Time</th>
-                          <th className="text-left p-3 font-medium">Session Type</th>
-                          <th className="text-left p-3 font-medium">Status</th>
+                          <th className="text-top text-left p-3 font-medium">{t('studentDetails.dateTime')}</th>
+                          <th className="text-top text-center p-3 font-medium">{t('studentDetails.sessionType')}</th>
+                          <th className="text-top text-center p-3 font-medium">{t('studentDetails.status')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -740,26 +797,34 @@ export default function StudentDetailsPage() {
                             className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
                             onClick={() => handleSessionClick(session)}
                           >
-                            <td className="p-3">
+                            <td className="p-3 text-left">
                               <div className="space-y-1">
                                 <div className="flex items-center text-sm">
-                                  <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-                                  {formatDate(session.date)}
+                                  <Calendar className="mr-1 text-muted-foreground flex-shrink-0" style={{ width: '16px', height: '16px', minWidth: '16px', minHeight: '16px', maxWidth: '16px', maxHeight: '16px' }} />
+                                  <div className="flex flex-col">
+                                    <span>{formatDateForTable(session.date).dayMonth}</span>
+                                    <span className="text-muted-foreground text-xs">{formatDateForTable(session.date).year}</span>
+                                  </div>
                                 </div>
                                 <div className="flex items-center text-sm text-muted-foreground">
-                                  <Clock className="h-4 w-4 mr-1" />
-                                  {session.startTime} - {session.endTime}
+                                  <Clock className="mr-1 text-muted-foreground flex-shrink-0" style={{ width: '16px', height: '16px', minWidth: '16px', minHeight: '16px', maxWidth: '16px', maxHeight: '16px' }} />
+                                  <div className="flex flex-col">
+                                    <span>{formatTimeForTable(`${session.startTime} - ${session.endTime}`).startTime}</span>
+                                    {formatTimeForTable(`${session.startTime} - ${session.endTime}`).endTime && (
+                                      <span className="text-xs">{formatTimeForTable(`${session.startTime} - ${session.endTime}`).endTime}</span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </td>
-                            <td className="p-3">
+                            <td className="p-3 text-center">
                               <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
-                                {getSessionTypeDisplayName(session.sessionType)} ({getSessionCount(session.sessionType)} session{getSessionCount(session.sessionType) !== 1 ? 's' : ''})
+                                {getSessionTypeDisplayName(session.sessionType, t)}
                               </span>
                             </td>
-                            <td className="p-3">
+                            <td className="p-3 text-center">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSessionStatusColor(session.status)}`}>
-                                {session.status}
+                                {t(`sessionDetails.${session.status}`)}
                               </span>
                             </td>
                           </tr>
@@ -781,7 +846,7 @@ export default function StudentDetailsPage() {
                           ←
                         </Button>
                         <span className="text-sm text-muted-foreground px-2 py-1">
-                          Page {sessionPage} of {getTotalSessionPages()}
+                          {t('studentDetails.page')} {sessionPage} {t('studentDetails.of')} {getTotalSessionPages()}
                         </span>
                         <Button
                           variant="outline"
@@ -796,7 +861,7 @@ export default function StudentDetailsPage() {
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">No sessions recorded yet</p>
+                <p className="text-sm text-muted-foreground text-center py-8">{t('studentDetails.noSessionsRecorded')}</p>
               )}
             </CardContent>
           </Card>
@@ -838,7 +903,7 @@ export default function StudentDetailsPage() {
       <DeleteConfirmationDialog
         open={showDeleteNoteConfirm}
         onOpenChange={setShowDeleteNoteConfirm}
-        itemName="note"
+        itemName={t('common.note')}
         onConfirm={confirmDeleteNote}
         isLoading={isNoteSaving}
       />
@@ -846,7 +911,7 @@ export default function StudentDetailsPage() {
       <UpdateConfirmationDialog
         open={showUpdateNoteConfirm}
         onOpenChange={setShowUpdateNoteConfirm}
-        itemName="note"
+        itemName={t('common.note')}
         onConfirm={confirmUpdateNote}
         isLoading={isNoteSaving}
       />
@@ -855,7 +920,7 @@ export default function StudentDetailsPage() {
       <DeleteConfirmationDialog
         open={showDeleteStudentConfirm}
         onOpenChange={setShowDeleteStudentConfirm}
-        itemName="student"
+        itemName={t('students.singular')}
         onConfirm={confirmDeleteStudent}
         isLoading={isDeletingStudent}
       />
@@ -865,29 +930,29 @@ export default function StudentDetailsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
             <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Add Balance Transaction</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('studentDetails.addBalanceTransactionTitle')}</h3>
               <div className="space-y-4">
                 <div>
-                  <UILabel htmlFor="transactionAmount">Amount</UILabel>
+                  <UILabel htmlFor="transactionAmount">{t('studentDetails.amount')}</UILabel>
                   <Input
                     id="transactionAmount"
                     type="number"
                     step="1"
                     value={transactionAmount}
                     onChange={(e) => setTransactionAmount(e.target.value)}
-                    placeholder="Enter amount (positive to add, negative to deduct)"
+                    placeholder={t('studentDetails.enterAmountPositiveNegative')}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Positive values add to balance, negative values deduct from balance
+                    {t('studentDetails.amountHelpText')}
                   </p>
                 </div>
                 <div>
-                  <UILabel htmlFor="transactionReason">Reason / Description</UILabel>
+                  <UILabel htmlFor="transactionReason">{t('studentDetails.reasonDescription')}</UILabel>
                   <Input
                     id="transactionReason"
                     value={transactionReason}
                     onChange={(e) => setTransactionReason(e.target.value)}
-                    placeholder="Enter reason for this transaction"
+                    placeholder={t('studentDetails.enterReasonTransaction')}
                   />
                 </div>
               </div>
@@ -901,14 +966,14 @@ export default function StudentDetailsPage() {
                   }}
                   disabled={isBalanceSaving}
                 >
-                  Cancel
+                  {t('studentDetails.cancel')}
                 </Button>
                 <Button
                   onClick={handleAddBalanceTransaction}
                   disabled={!transactionAmount.trim() || !transactionReason.trim() || isBalanceSaving}
                 >
                   {isBalanceSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                  Add Transaction
+                  {t('studentDetails.addTransaction')}
                 </Button>
               </div>
             </div>

@@ -14,15 +14,10 @@ const nextConfig = {
   },
   // Fix for Next.js 15 static file serving
   experimental: {
-    optimizePackageImports: ['lucide-react'],
-    ...(process.env.NODE_ENV === 'development' && {
-      forceSwcTransforms: true,
-    }),
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-checkbox', '@radix-ui/react-label', '@radix-ui/react-slot'],
   },
   // Fix static asset serving issues
   assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
-  // Ensure proper static file handling
-  outputFileTracing: false,
   // Fix for Next.js 15 static file serving
   distDir: '.next',
   // Fix for Next.js 15 static asset serving

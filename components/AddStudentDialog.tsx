@@ -17,6 +17,7 @@ import { Card, CardContent } from './ui/card';
 import { Student } from '@/lib/types';
 import { saveStudent, getSettings, getStudents } from '@/lib/storage';
 import { UserPlus, Users } from 'lucide-react';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 interface AddStudentDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ export function AddStudentDialog({
   onStudentAdded,
   existingStudentIds = [],
 }: AddStudentDialogProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<'select' | 'create'>('select');
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -149,19 +151,19 @@ export function AddStudentDialog({
     }, 0);
   };
 
-  // Filter students that aren't already in the session
+  // Filter students that aren't already in the session - only search by name after 2+ characters
   const availableStudents = allStudents.filter(s => 
     !existingStudentIds.includes(s.id) &&
-    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (searchTerm.length < 2 || s.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
       <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] flex flex-col z-[60]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Add Student to Session</DialogTitle>
+          <DialogTitle>{t('studentForm.addStudentToSession')}</DialogTitle>
           <DialogDescription>
-            Select an existing student or create a new one.
+            {t('studentForm.selectOrCreateStudent')}
           </DialogDescription>
         </DialogHeader>
 
@@ -173,7 +175,7 @@ export function AddStudentDialog({
             className="flex-1"
           >
             <Users className="h-4 w-4 mr-2" />
-            Select Existing
+            {t('studentForm.selectExisting')}
           </Button>
           <Button
             variant={mode === 'create' ? 'default' : 'outline'}
@@ -181,7 +183,7 @@ export function AddStudentDialog({
             className="flex-1"
           >
             <UserPlus className="h-4 w-4 mr-2" />
-            Create New
+            {t('studentForm.createNew')}
           </Button>
         </div>
 
@@ -190,12 +192,12 @@ export function AddStudentDialog({
             <div className="space-y-4 py-4">
               {/* Search */}
               <div className="space-y-2">
-                <Label htmlFor="search">Search Students</Label>
+                <Label htmlFor="search">{t('studentForm.searchStudents')}</Label>
                 <Input
                   id="search"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by name..."
+                  placeholder={t('studentForm.searchByName')}
                 />
               </div>
 
@@ -205,7 +207,7 @@ export function AddStudentDialog({
                   <Card>
                     <CardContent className="p-6 text-center">
                       <p className="text-sm text-muted-foreground">
-                        {searchTerm ? 'No students found matching your search.' : 'No available students to add.'}
+                        {searchTerm ? t('studentForm.noStudentsFound') : t('studentForm.noAvailableStudents')}
                       </p>
                     </CardContent>
                   </Card>
@@ -221,11 +223,11 @@ export function AddStudentDialog({
                           <div>
                             <p className="text-sm font-medium">{student.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              Balance: {student.balance} {Math.abs(student.balance) === 1 ? 'session' : 'sessions'}
+                              {t('studentForm.currentBalance')}: {student.balance} {Math.abs(student.balance) === 1 ? t('common.session') : t('common.sessions')}
                             </p>
                           </div>
                           <Button size="sm" variant="outline">
-                            Add
+                            {t('studentForm.add')}
                           </Button>
                         </div>
                       </CardContent>
@@ -237,28 +239,28 @@ export function AddStudentDialog({
           ) : (
             <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">{t('studentForm.nameRequired')}</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Student name"
+                placeholder={t('studentForm.namePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{t('studentForm.phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1234567890"
+                placeholder={t('studentForm.phonePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="balance">Initial Balance (Sessions)</Label>
+              <Label htmlFor="balance">{t('studentForm.initialBalance')}</Label>
               <Input
                 id="balance"
                 type="number"
@@ -270,48 +272,48 @@ export function AddStudentDialog({
                 placeholder="0"
               />
               <p className="text-xs text-muted-foreground">
-                Positive means student owes sessions, negative means credit
+                {t('studentForm.balanceHelpText')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="weight">Weight (kg)</Label>
+                <Label htmlFor="weight">{t('studentForm.weight')}</Label>
                 <Input
                   id="weight"
                   type="number"
                   step="0.1"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  placeholder="70.5"
+                  placeholder={t('studentForm.weightPlaceholder')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="height">Height (cm)</Label>
+                <Label htmlFor="height">{t('studentForm.height')}</Label>
                 <Input
                   id="height"
                   type="number"
                   step="0.1"
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
-                  placeholder="175"
+                  placeholder={t('studentForm.heightPlaceholder')}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
+                <Label htmlFor="age">{t('studentForm.age')}</Label>
                 <Input
                   id="age"
                   type="number"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
-                  placeholder="25"
+                  placeholder={t('studentForm.agePlaceholder')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="birthday">Birthday</Label>
+                <Label htmlFor="birthday">{t('studentForm.birthday')}</Label>
                 <Input
                   id="birthday"
                   type="date"
@@ -322,13 +324,13 @@ export function AddStudentDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('studentForm.description')}</Label>
               <textarea
                 id="description"
                 name="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="General description about the student..."
+                placeholder={t('studentForm.descriptionPlaceholder')}
                 className="w-full min-h-[80px] px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
               />
             </div>
@@ -359,10 +361,10 @@ export function AddStudentDialog({
 
         <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('studentForm.cancel')}
           </Button>
           {mode === 'create' && (
-            <Button onClick={handleSave}>Create & Add Student</Button>
+            <Button onClick={handleSave}>{t('studentForm.createAndAdd')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

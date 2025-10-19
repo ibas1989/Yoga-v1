@@ -52,8 +52,13 @@ function HomeContent({ initialView }: { initialView: 'calendar' | 'students' | '
   // Removed handleDateSelect - Calendar component now handles its own navigation to Day View
 
   const handleSessionClick = (session: Session) => {
-    // Use direct navigation to avoid router issues
-    window.location.href = `/sessions/${session.id}`;
+    // Construct return URL to calendar day view for the session's date
+    const sessionDate = new Date(session.date);
+    const dateStr = sessionDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    const returnTo = `/calendar/day/${dateStr}`;
+    
+    // Navigate to session details with returnTo parameter
+    window.location.href = `/sessions/${session.id}?returnTo=${encodeURIComponent(returnTo)}`;
   };
 
   const handleSessionCreated = () => {
@@ -61,8 +66,8 @@ function HomeContent({ initialView }: { initialView: 'calendar' | 'students' | '
   };
 
   const handleAddSessionClick = () => {
-    // Use direct navigation to avoid router issues
-    window.location.href = '/sessions/new';
+    // Navigate to new session page with returnTo parameter to go back to calendar
+    window.location.href = '/sessions/new?returnTo=' + encodeURIComponent('/?view=calendar');
   };
 
   return (

@@ -26,6 +26,7 @@ import { Textarea } from './ui/textarea';
 import { AddStudentDialog } from './AddStudentDialog';
 import { Student, Session } from '@/lib/types';
 import { getStudents, getSettings, saveSession } from '@/lib/storage';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 interface SessionDialogProps {
   open: boolean;
@@ -46,6 +47,7 @@ export function SessionDialog({
   onSessionSaved,
   onCancelEdit,
 }: SessionDialogProps) {
+  const { t, getCurrentLanguage } = useTranslation();
   const [students, setStudents] = useState<Student[]>([]);
   const [availableGoals, setAvailableGoals] = useState<string[]>([]);
   const [defaultTeamCharge, setDefaultTeamCharge] = useState(1);
@@ -72,9 +74,9 @@ export function SessionDialog({
 
   // Duration options in minutes
   const durationOptions = [
-    { value: '60', label: '1 hour' },
-    { value: '90', label: '1.5 hours' },
-    { value: '120', label: '2 hours' },
+    { value: '60', label: t('sessions.durationOptions.oneHour') },
+    { value: '90', label: t('sessions.durationOptions.oneAndHalfHours') },
+    { value: '120', label: t('sessions.durationOptions.twoHours') },
   ];
 
   useEffect(() => {
@@ -223,11 +225,11 @@ export function SessionDialog({
     return `${sessionCount} session${plural}`;
   };
 
-  // Filter students based on search query
+  // Filter students based on search query - only search by name after 2+ characters
   const filteredAvailableStudents = students
     .filter(student => !selectedStudentIds.includes(student.id))
     .filter(student => 
-      studentSearchQuery.length === 0 || 
+      studentSearchQuery.length < 2 || 
       student.name.toLowerCase().includes(studentSearchQuery.toLowerCase())
     );
 
@@ -237,7 +239,12 @@ export function SessionDialog({
         <DialogHeader>
           <DialogTitle>{sessionToEdit ? 'Edit Session' : 'Create New Session'}</DialogTitle>
           <DialogDescription>
-            {(sessionToEdit ? new Date(sessionToEdit.date) : selectedDate) && format(sessionToEdit ? new Date(sessionToEdit.date) : (selectedDate as Date), 'EEEE, MMMM d, yyyy')}
+            {(sessionToEdit ? new Date(sessionToEdit.date) : selectedDate) && (sessionToEdit ? new Date(sessionToEdit.date) : (selectedDate as Date)).toLocaleDateString(getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
           </DialogDescription>
         </DialogHeader>
 

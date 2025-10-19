@@ -15,8 +15,10 @@ import { ContextualBar } from '@/components/ui/contextual-bar';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Student } from '@/lib/types';
 import { saveStudent, getSettings } from '@/lib/storage';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 function NewStudentContent() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [availableGoals, setAvailableGoals] = useState<string[]>([]);
   const [goalsLoaded, setGoalsLoaded] = useState(false);
@@ -106,7 +108,7 @@ function NewStudentContent() {
 
   const handleSave = () => {
     if (!name.trim()) {
-      alert('Please enter a student name');
+      alert(t('validation.enterStudentName'));
       return;
     }
 
@@ -166,14 +168,14 @@ function NewStudentContent() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t('studentPages.back')}
             </Button>
             <h2 className="text-base font-medium text-muted-foreground">
-              New Student
+              {t('studentPages.newStudent')}
             </h2>
             <Button onClick={handleSave}>
               <Save className="h-4 w-4 mr-2" />
-              Create
+              {t('studentPages.create')}
             </Button>
           </div>
         </div>
@@ -188,55 +190,55 @@ function NewStudentContent() {
             {/* Personal Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name">{t('studentForm.nameRequired')}</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter student name"
+                  placeholder={t('studentPages.enterStudentName')}
                   autoComplete="name"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">{t('studentForm.phone')}</Label>
                 <Input
                   id="phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter phone number"
+                  placeholder={t('studentPages.enterPhoneNumber')}
                   autoComplete="tel"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="weight">Weight (kg)</Label>
+                <Label htmlFor="weight">{t('studentForm.weight')}</Label>
                 <Input
                   id="weight"
                   type="number"
                   step="0.1"
                   value={weight || ''}
                   onChange={(e) => setWeight(parseFloat(e.target.value) || undefined)}
-                  placeholder="Enter weight"
+                  placeholder={t('studentPages.enterWeight')}
                   autoComplete="off"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="height">Height (cm)</Label>
+                <Label htmlFor="height">{t('studentForm.height')}</Label>
                 <Input
                   id="height"
                   type="number"
                   step="0.1"
                   value={height || ''}
                   onChange={(e) => setHeight(parseFloat(e.target.value) || undefined)}
-                  placeholder="Enter height"
+                  placeholder={t('studentPages.enterHeight')}
                   autoComplete="off"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="birthday">Birthday</Label>
+                <Label htmlFor="birthday">{t('studentForm.birthday')}</Label>
                 <Input
                   id="birthday"
                   type="date"
@@ -247,7 +249,7 @@ function NewStudentContent() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="memberSince">Member Since</Label>
+                <Label htmlFor="memberSince">{t('studentPages.memberSince')}</Label>
                 <Input
                   id="memberSince"
                   type="date"
@@ -258,7 +260,7 @@ function NewStudentContent() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="balance">Initial Balance (Sessions)</Label>
+                <Label htmlFor="balance">{t('studentForm.initialBalance')}</Label>
                 <Input
                   id="balance"
                   type="number"
@@ -267,34 +269,34 @@ function NewStudentContent() {
                   onChange={handleBalanceChange}
                   onFocus={handleBalanceFocus}
                   onBlur={handleBalanceBlur}
-                  placeholder="Enter initial balance"
+                  placeholder={t('studentPages.enterInitialBalance')}
                   autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Positive values mean the student owes sessions, negative values mean they have credit
+                  {t('studentPages.balanceHelpText')}
                 </p>
               </div>
             </div>
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('studentForm.description')}</Label>
               <textarea
                 id="description"
                 name="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="General description about the student..."
+                placeholder={t('studentForm.descriptionPlaceholder')}
                 className="w-full min-h-[100px] px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
             {/* Goals */}
             <div className="space-y-3">
-              <Label>Goals & Focus Areas</Label>
+              <Label>{t('studentPages.goalsAndFocusAreas')}</Label>
               {!goalsLoaded ? (
                 <p className="text-sm text-muted-foreground">
-                  Loading goals...
+                  {t('studentPages.loadingGoals')}
                 </p>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -322,10 +324,10 @@ function NewStudentContent() {
       <ConfirmationDialog
         open={showBackConfirmation}
         onOpenChange={setShowBackConfirmation}
-        title="Unsaved Changes"
-        description="You have unsaved changes. Are you sure you want to leave this page?"
-        confirmText="Yes"
-        cancelText="No"
+        title={t('studentPages.unsavedChanges')}
+        description={t('studentPages.unsavedChangesDescription')}
+        confirmText={t('studentPages.yes')}
+        cancelText={t('studentPages.no')}
         onConfirm={confirmBackNavigation}
         onCancel={cancelBackNavigation}
       />

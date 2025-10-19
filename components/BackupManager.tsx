@@ -29,20 +29,54 @@ import {
   GoogleDriveAuthState,
   GoogleDriveFile 
 } from '../lib/googleDriveBackup';
+import { useTranslation } from '../lib/hooks/useTranslation';
 
 interface BackupManagerProps {
   onDataRestored?: () => void;
 }
 
 export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
-  const [stats, setStats] = useState(getBackupStats());
-  const [autoBackupConfig, setAutoBackupConfig] = useState<AutoBackupConfig>(getAutoBackupConfig());
-  const [backupHistory, setBackupHistory] = useState(getBackupHistory());
+  
+  // Initialize state with error handling
+  const [stats, setStats] = useState(() => {
+    try {
+      return getBackupStats();
+    } catch (error) {
+      console.error('Error getting backup stats:', error);
+      return { students: 0, sessions: 0 };
+    }
+  });
+  
+  const [autoBackupConfig, setAutoBackupConfig] = useState<AutoBackupConfig>(() => {
+    try {
+      return getAutoBackupConfig();
+    } catch (error) {
+      console.error('Error getting auto backup config:', error);
+      return {
+        enabled: false,
+        interval: 24,
+        maxBackups: 7,
+        notifyOnBackup: true,
+        storageLocation: 'downloads'
+      };
+    }
+  });
+  
+  const [backupHistory, setBackupHistory] = useState(() => {
+    try {
+      return getBackupHistory();
+    } catch (error) {
+      console.error('Error getting backup history:', error);
+      return [];
+    }
+  });
   const [showFolderPicker, setShowFolderPicker] = useState(false);
   const [selectedFolderPath, setSelectedFolderPath] = useState<string>('');
   const [directoryHandle, setDirectoryHandle] = useState<any>(null);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [showGoogleDriveConfig, setShowGoogleDriveConfig] = useState(false);
   const [googleDriveAuthState, setGoogleDriveAuthState] = useState<GoogleDriveAuthState>({ isAuthenticated: false });
   const [googleDriveFiles, setGoogleDriveFiles] = useState<GoogleDriveFile[]>([]);
@@ -66,8 +100,25 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
 
   // Initialize component
   useEffect(() => {
+    try {
+      // Detect mobile device
+      const detectMobileDevice = () => {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+        setIsMobileDevice(isMobile);
+      };
+      
+      detectMobileDevice();
+    } catch (error) {
+      console.error('Error in BackupManager initialization:', error);
+    }
+    
     // Initialize auto backup system
-    initializeAutoBackup();
+    try {
+      initializeAutoBackup();
+    } catch (error) {
+      console.error('Error initializing auto backup:', error);
+    }
     
     // Check Google Drive auth status if configured
     const checkGoogleDriveStatus = async () => {
@@ -90,7 +141,11 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
     
     // Set up event listener for auto backup completion
     const handleAutoBackupCompleted = () => {
-      setBackupHistory(getBackupHistory());
+      try {
+        setBackupHistory(getBackupHistory());
+      } catch (error) {
+        console.error('Error updating backup history:', error);
+      }
     };
     
     window.addEventListener('autoBackupCompleted', handleAutoBackupCompleted);
@@ -109,10 +164,10 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
     setIsLoading(true);
     try {
       await exportBackup();
-      showMessage('success', 'Backup exported successfully!');
+      showMessage('success', t('backup.exportBackup.success'));
       setStats(getBackupStats());
     } catch (error) {
-      showMessage('error', 'Failed to export backup');
+      showMessage('error', t('backup.exportBackup.error'));
     } finally {
       setIsLoading(false);
     }
@@ -127,20 +182,20 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
         if (validation.valid) {
           const restoreResult = restoreBackup(result.data);
           if (restoreResult.success) {
-            showMessage('success', 'Data restored successfully!');
+            showMessage('success', t('backup.importBackup.success'));
             setStats(getBackupStats());
             onDataRestored?.();
           } else {
             showMessage('error', restoreResult.message);
           }
         } else {
-          showMessage('error', `Backup validation failed: ${validation.issues.join(', ')}`);
+          showMessage('error', t('backup.importBackup.validationFailed', { issues: validation.issues.join(', ') }));
         }
       } else {
         showMessage('error', result.message);
       }
     } catch (error) {
-      showMessage('error', 'Failed to import backup');
+      showMessage('error', t('backup.importBackup.error'));
     } finally {
       setIsLoading(false);
     }
@@ -168,9 +223,9 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
         setAutoBackupConfig(newConfig);
         saveAutoBackupConfig(newConfig);
         initializeAutoBackup();
-        showMessage('success', 'Auto backup enabled with Google Drive');
+        showMessage('success', t('backup.autoBackup.enableSuccess'));
       } else {
-        // Show folder picker for local storage
+        // Show folder picker for local storage - enhanced for mobile
         setShowFolderPicker(true);
       }
     } else {
@@ -181,14 +236,14 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       stopAutoBackup();
       setSelectedFolderPath('');
       setDirectoryHandle(null);
-      showMessage('info', 'Auto backup disabled');
+      showMessage('info', t('backup.autoBackup.disableSuccess'));
     }
   };
 
   const handleFolderSelect = async () => {
     try {
       // Check if File System Access API is supported
-      if ('showDirectoryPicker' in window) {
+      if ('showDirectoryPicker' in window && typeof (window as any).showDirectoryPicker === 'function') {
         const handle = await (window as any).showDirectoryPicker();
         const folderName = handle.name;
         setSelectedFolderPath(folderName);
@@ -204,11 +259,41 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
         setAutoBackupConfig(newConfig);
         saveAutoBackupConfig(newConfig);
         initializeAutoBackup();
+        
+        // Create immediate backup to the selected folder
+        setIsLoading(true);
+        try {
+          const backup = generateBackup();
+          const backupData = JSON.stringify(backup, null, 2);
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const fileName = `yoga-backup-${timestamp}.json`;
+          
+          // Create file in the selected folder
+          if (handle && typeof handle.getFileHandle === 'function') {
+            const fileHandle = await handle.getFileHandle(fileName, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(backupData);
+            await writable.close();
+            
+            // Update backup history
+            const newHistory = getBackupHistory();
+            setBackupHistory(newHistory);
+            
+            showMessage('success', t('backup.autoBackup.enableFolderSuccessWithBackup'));
+          } else {
+            throw new Error('File System Access API not fully supported');
+          }
+        } catch (backupError) {
+          console.error('Error creating immediate backup:', backupError);
+          showMessage('info', t('backup.autoBackup.enableFolderSuccessNoBackup'));
+        } finally {
+          setIsLoading(false);
+        }
+        
         setShowFolderPicker(false);
-        showMessage('success', 'Auto backup enabled with selected folder');
       } else {
         // Fallback for browsers that don't support File System Access API
-        showMessage('error', 'Folder selection not supported in this browser. Please use Chrome or Edge.');
+        showMessage('error', t('backup.folderPicker.folderNotSupported'));
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -216,7 +301,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
         return;
       }
       console.error('Error selecting folder:', error);
-      showMessage('error', 'Failed to select folder');
+      showMessage('error', t('backup.folderPicker.selectFolderError'));
     }
   };
 
@@ -227,23 +312,52 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
   const handleOpenFolder = async () => {
     try {
       if (directoryHandle) {
-        // Try to open the folder using the stored directory handle
-        // This will open the folder in the system file manager
+        // Request permission to access the folder
         await directoryHandle.requestPermission({ mode: 'readwrite' });
         
-        // For now, we'll show the folder path since direct opening isn't fully supported
-        showMessage('info', `Folder location: ${selectedFolderPath}`);
+        // Create a temporary file to trigger folder opening
+        const tempFileName = `yoga-backup-folder-${Date.now()}.txt`;
+        const tempContent = `Yoga Tracker Backup Folder\nCreated: ${new Date().toLocaleString()}\n\nThis file was created to open the backup folder.\nYou can safely delete this file.`;
         
-        // In a real implementation, you might want to:
-        // 1. Create a file in the folder to "open" it
-        // 2. Use a different approach to open the system file manager
-        // 3. Provide instructions to the user on how to navigate to the folder
+        try {
+          // Create a temporary file in the folder
+          const fileHandle = await directoryHandle.getFileHandle(tempFileName, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(tempContent);
+          await writable.close();
+          
+          // Try multiple approaches to open the folder
+          try {
+            // Approach 1: Create a download link to trigger folder opening
+            const blob = new Blob([tempContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = tempFileName;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showMessage('success', t('backup.autoBackup.folderOpened', { path: selectedFolderPath }));
+          } catch (downloadError) {
+            // Approach 2: Show folder path with instructions
+            showMessage('info', t('backup.autoBackup.folderLocationWithInstructions', { 
+              path: selectedFolderPath,
+              fileName: tempFileName
+            }));
+          }
+        } catch (fileError) {
+          // If we can't create a file, show the folder path
+          showMessage('info', t('backup.autoBackup.folderLocation', { path: selectedFolderPath }));
+        }
       } else {
-        showMessage('error', 'Folder handle not available. Please reselect the folder.');
+        showMessage('error', t('backup.autoBackup.folderHandleError'));
       }
     } catch (error) {
       console.error('Error opening folder:', error);
-      showMessage('error', 'Could not open folder. Please check the folder path manually.');
+      showMessage('error', t('backup.autoBackup.openFolderError'));
     }
   };
 
@@ -255,7 +369,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       console.log('Auto backup result:', result);
       
       if (result.success) {
-        showMessage('success', 'Manual backup completed successfully!');
+        showMessage('success', t('backup.autoBackup.manualSuccess'));
         // Refresh the backup history
         const newHistory = getBackupHistory();
         setBackupHistory(newHistory);
@@ -266,7 +380,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       }
     } catch (error) {
       console.error('Auto backup error:', error);
-      showMessage('error', 'Failed to perform automatic backup');
+      showMessage('error', t('backup.autoBackup.manualError'));
     } finally {
       setIsLoading(false);
     }
@@ -274,7 +388,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
 
   const handleExportAutoBackup = async () => {
     if (backupHistory.length === 0) {
-      showMessage('error', 'No auto backups available. Create a backup first.');
+      showMessage('error', t('backup.autoBackup.noBackups'));
       return;
     }
 
@@ -286,7 +400,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       const backupData = localStorage.getItem(backupKey);
       
       if (!backupData) {
-        showMessage('error', 'Auto backup data not found');
+        showMessage('error', t('backup.autoBackup.dataNotFound'));
         return;
       }
 
@@ -302,9 +416,9 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      showMessage('success', 'Auto backup exported successfully!');
+      showMessage('success', t('backup.autoBackup.exportSuccess'));
     } catch (error) {
-      showMessage('error', 'Failed to export auto backup');
+      showMessage('error', t('backup.autoBackup.exportError'));
     } finally {
       setIsLoading(false);
     }
@@ -317,7 +431,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
 
   const handleGoogleDriveConfigSave = async () => {
     if (!googleDriveConfig.clientId || !googleDriveConfig.apiKey) {
-      showMessage('error', 'Please provide both Client ID and API Key');
+      showMessage('error', t('backup.googleDrive.provideCredentials'));
       return;
     }
 
@@ -349,15 +463,15 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
         saveAutoBackupConfig(newConfig);
         
         setShowGoogleDriveConfig(false);
-        showMessage('success', 'Google Drive connected successfully!');
+        showMessage('success', t('backup.googleDrive.success'));
         
         // Load existing backups
         await loadGoogleDriveBackups();
       } else {
-        showMessage('error', 'Failed to authenticate with Google Drive');
+        showMessage('error', t('backup.googleDrive.authError'));
       }
     } catch (error) {
-      showMessage('error', 'Failed to setup Google Drive: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      showMessage('error', t('backup.googleDrive.error', { error: error instanceof Error ? error.message : 'Unknown error' }));
     } finally {
       setIsLoading(false);
     }
@@ -390,9 +504,9 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       setAutoBackupConfig(newConfig);
       saveAutoBackupConfig(newConfig);
       
-      showMessage('info', 'Signed out from Google Drive');
+      showMessage('info', t('backup.googleDrive.signOutSuccess'));
     } catch (error) {
-      showMessage('error', 'Failed to sign out from Google Drive');
+      showMessage('error', t('backup.googleDrive.signOutError'));
     }
   };
 
@@ -404,13 +518,13 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       const result = await googleDriveService.uploadBackup(backup);
       
       if (result.success) {
-        showMessage('success', 'Backup uploaded to Google Drive successfully!');
+        showMessage('success', t('backup.googleDrive.uploadSuccess'));
         await loadGoogleDriveBackups();
       } else {
         showMessage('error', result.message);
       }
     } catch (error) {
-      showMessage('error', 'Failed to upload to Google Drive: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      showMessage('error', t('backup.googleDrive.uploadError', { error: error instanceof Error ? error.message : 'Unknown error' }));
     } finally {
       setIsLoading(false);
     }
@@ -419,20 +533,20 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Backup & Restore</h2>
-        <p className="text-gray-600">Protect your data with automated backups</p>
+      <div className="text-center pt-4">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('backup.title')}</h2>
+        <p className="text-gray-600">{t('backup.subtitle')}</p>
       </div>
 
       {/* Statistics */}
-      <Card className="p-4">
+      <Card className="p-4 mt-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <FileText className="h-5 w-5 text-blue-600" />
-            <span className="font-medium">Current Data</span>
+            <span className="font-medium">{t('backup.currentData')}</span>
           </div>
           <div className="text-sm text-gray-600">
-            {stats.students} students • {stats.sessions} sessions
+            {stats.students} {t('backup.students')} • {stats.sessions} {t('backup.sessions')}
           </div>
         </div>
       </Card>
@@ -464,8 +578,8 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
               <Download className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Export Backup</h3>
-              <p className="text-sm text-gray-600">Download your data as a file</p>
+              <h3 className="font-semibold text-gray-900">{t('backup.exportBackup.title')}</h3>
+              <p className="text-sm text-gray-600">{t('backup.exportBackup.description')}</p>
             </div>
           </div>
           <Button 
@@ -474,7 +588,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
             className="w-full"
             variant="default"
           >
-            {isLoading ? 'Exporting...' : 'Export Data'}
+            {isLoading ? t('backup.exportBackup.exporting') : t('backup.exportBackup.button')}
           </Button>
         </Card>
 
@@ -485,8 +599,8 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
               <Upload className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Import Backup</h3>
-              <p className="text-sm text-gray-600">Restore from a backup file</p>
+              <h3 className="font-semibold text-gray-900">{t('backup.importBackup.title')}</h3>
+              <p className="text-sm text-gray-600">{t('backup.importBackup.description')}</p>
             </div>
           </div>
           <div className="space-y-2">
@@ -503,75 +617,11 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
               className="w-full"
               variant="outline"
             >
-              {isLoading ? 'Importing...' : 'Choose File'}
+              {isLoading ? t('backup.importBackup.importing') : t('backup.importBackup.button')}
             </Button>
           </div>
         </Card>
 
-
-        {/* Google Drive Backup */}
-        <Card className="p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Cloud className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Google Drive</h3>
-              <p className="text-sm text-gray-600">Cloud backup to Google Drive</p>
-            </div>
-          </div>
-          
-          {/* Google Drive Status */}
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Status</span>
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                googleDriveAuthState.isAuthenticated 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
-                {googleDriveAuthState.isAuthenticated ? `Connected as ${googleDriveAuthState.userEmail}` : 'Not Connected'}
-              </span>
-            </div>
-            {googleDriveAuthState.isAuthenticated && (
-              <div className="text-xs text-gray-600 space-y-1">
-                <div>• {googleDriveFiles.length} backup files in Google Drive</div>
-                <div>• Auto backup: {autoBackupConfig.storageLocation === 'google_drive' ? 'Enabled' : 'Disabled'}</div>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            {!googleDriveAuthState.isAuthenticated ? (
-              <Button 
-                onClick={handleGoogleDriveSetup}
-                className="w-full"
-                variant="outline"
-              >
-                <Cloud className="h-4 w-4 mr-2" />
-                Connect Google Drive
-              </Button>
-            ) : (
-              <div className="space-y-2">
-                <Button 
-                  onClick={handleUploadToGoogleDrive}
-                  disabled={isLoading}
-                  className="w-full"
-                  variant="default"
-                >
-                  {isLoading ? 'Uploading...' : 'Upload Backup Now'}
-                </Button>
-                <Button 
-                  onClick={handleGoogleDriveSignOut}
-                  className="w-full"
-                  variant="outline"
-                >
-                  Sign Out
-                </Button>
-              </div>
-            )}
-          </div>
-        </Card>
 
         {/* Auto Backup */}
         <Card className="p-6">
@@ -580,29 +630,29 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
               <Shield className="h-6 w-6 text-orange-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Auto Backup</h3>
-              <p className="text-sm text-gray-600">Automatic scheduled backups</p>
+              <h3 className="font-semibold text-gray-900">{t('backup.autoBackup.title')}</h3>
+              <p className="text-sm text-gray-600">{t('backup.autoBackup.description')}</p>
             </div>
           </div>
           
           {/* Auto Backup Status */}
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Status</span>
+              <span className="text-sm font-medium text-gray-700">{t('backup.autoBackup.status')}</span>
               <span className={`text-xs px-2 py-1 rounded-full ${
                 autoBackupConfig.enabled 
                   ? 'bg-green-100 text-green-800' 
                   : 'bg-gray-100 text-gray-600'
               }`}>
-                {autoBackupConfig.enabled ? 'Enabled' : 'Disabled'}
+                {autoBackupConfig.enabled ? t('backup.autoBackup.enabled') : t('backup.autoBackup.disabled')}
               </span>
             </div>
             <div className="text-xs text-gray-600 space-y-1">
-              <div>• Backs up every {autoBackupConfig.interval} hours</div>
-              <div>• Keeps {autoBackupConfig.maxBackups} recent backups</div>
+              <div>• {t('backup.autoBackup.backsUpEvery', { hours: autoBackupConfig.interval })}</div>
+              <div>• {t('backup.autoBackup.keepsBackups', { count: autoBackupConfig.maxBackups })}</div>
               {autoBackupConfig.enabled && backupHistory.length > 0 && getNextBackupTime() && (
                 <div className="text-blue-600 font-medium">
-                  Next backup: {getNextBackupTime()!.toLocaleString()}
+                  {t('backup.autoBackup.nextBackup', { time: getNextBackupTime()!.toLocaleString() })}
                 </div>
               )}
             </div>
@@ -610,7 +660,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Enable Auto Backup</span>
+              <span className="text-sm text-gray-600">{t('backup.autoBackup.enableToggle')}</span>
               <button
                 onClick={handleAutoBackupToggle}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -628,7 +678,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
             {/* Selected Folder Path - Only shown when auto backup is enabled */}
             {autoBackupConfig.enabled && selectedFolderPath && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Backup Location</label>
+                <label className="text-sm font-medium text-gray-700">{t('backup.autoBackup.backupLocation')}</label>
                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
@@ -639,10 +689,74 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
                       onClick={handleOpenFolder}
                       className="text-xs text-green-600 hover:text-green-800 underline"
                     >
-                      Open Folder
+                      {t('backup.autoBackup.openFolder')}
                     </button>
                   </div>
                 </div>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Google Drive Backup */}
+        <Card className="p-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Cloud className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">{t('backup.googleDrive.title')}</h3>
+              <p className="text-sm text-gray-600">{t('backup.googleDrive.description')}</p>
+            </div>
+          </div>
+          
+          {/* Google Drive Status */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700">{t('backup.googleDrive.status')}</span>
+              <span className={`text-xs px-2 py-1 rounded-full ${
+                googleDriveAuthState.isAuthenticated 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-gray-100 text-gray-600'
+              }`}>
+                {googleDriveAuthState.isAuthenticated ? t('backup.googleDrive.connected', { email: googleDriveAuthState.userEmail || '' }) : t('backup.googleDrive.notConnected')}
+              </span>
+            </div>
+            {googleDriveAuthState.isAuthenticated && (
+              <div className="text-xs text-gray-600 space-y-1">
+                <div>• {t('backup.googleDrive.backupFiles', { count: googleDriveFiles.length })}</div>
+                <div>• {t('backup.googleDrive.autoBackup', { status: autoBackupConfig.storageLocation === 'google_drive' ? t('backup.googleDrive.enabled') : t('backup.googleDrive.disabled') })}</div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            {!googleDriveAuthState.isAuthenticated ? (
+              <Button 
+                onClick={handleGoogleDriveSetup}
+                className="w-full"
+                variant="outline"
+              >
+                <Cloud className="h-4 w-4 mr-2" />
+                {t('backup.googleDrive.connectButton')}
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <Button 
+                  onClick={handleUploadToGoogleDrive}
+                  disabled={isLoading}
+                  className="w-full"
+                  variant="default"
+                >
+                  {isLoading ? t('backup.googleDrive.uploading') : t('backup.googleDrive.uploadButton')}
+                </Button>
+                <Button 
+                  onClick={handleGoogleDriveSignOut}
+                  className="w-full"
+                  variant="outline"
+                >
+                  {t('backup.googleDrive.signOut')}
+                </Button>
               </div>
             )}
           </div>
@@ -652,7 +766,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       {/* Backup History */}
       {backupHistory.length > 0 && (
         <Card className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-3">Recent Backups</h3>
+          <h3 className="font-semibold text-gray-900 mb-3">{t('backup.recentBackups')}</h3>
           <div className="space-y-2">
             {backupHistory.slice(0, 5).map((backup) => (
               <div key={backup.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
@@ -661,11 +775,11 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
                     {new Date(backup.timestamp).toLocaleDateString()}
                   </p>
                   <p className="text-xs text-gray-600">
-                    {backup.studentCount} students • {backup.sessionCount} sessions
+                    {backup.studentCount} {t('backup.students')} • {backup.sessionCount} {t('backup.sessions')}
                   </p>
                 </div>
                 <div className="text-xs text-gray-500">
-                  {(backup.size / 1024).toFixed(1)} KB
+                  {t('backup.backupSize', { size: (backup.size / 1024).toFixed(1) })}
                 </div>
               </div>
             ))}
@@ -674,69 +788,52 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       )}
 
 
-      {/* How Auto Backup Works */}
-      <Card className="p-4 bg-blue-50">
-        <div className="flex items-start space-x-3">
-          <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
-          <div>
-            <h4 className="font-medium text-blue-900 mb-2">How Auto Backup Works</h4>
-            <div className="text-sm text-blue-800 space-y-2">
-              <div>
-                <strong>⚠️ Required:</strong> You must select a storage location before enabling auto backup
-              </div>
-              <div>
-                <strong>When it runs:</strong> Every 24 hours while you're using the app
-              </div>
-              <div>
-                <strong>What it does:</strong> Creates a complete copy of all your data (students, sessions, settings)
-              </div>
-              <div>
-                <strong>Storage options:</strong>
-                <ul className="ml-4 mt-1 space-y-1">
-                  <li>• <strong>Google Drive:</strong> Uploads backups to your Google Drive (recommended)</li>
-                  <li>• <strong>Downloads folder:</strong> Automatically downloads backup files</li>
-                  <li>• <strong>Custom location:</strong> Downloads to your chosen folder</li>
-                  <li>• <strong>Browser storage:</strong> Not recommended for auto backup</li>
-                </ul>
-              </div>
-              <div>
-                <strong>How many backups:</strong> Keeps the 7 most recent backups, automatically deletes older ones
-              </div>
-              <div>
-                <strong>Manual backup:</strong> Use "Backup Now" to create a backup immediately
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Backup Tips */}
-      <Card className="p-4 bg-green-50">
-        <div className="flex items-start space-x-3">
-          <Shield className="h-5 w-5 text-green-600 mt-0.5" />
-          <div>
-            <h4 className="font-medium text-green-900 mb-1">Backup Tips</h4>
-            <ul className="text-sm text-green-800 space-y-1">
-              <li>• Export backups regularly to avoid data loss</li>
-              <li>• Store backup files in a safe location (cloud storage, external drive)</li>
-              <li>• Test your backups by importing them</li>
-              <li>• Auto backup stores locally - use "Export Auto Backup" to download files</li>
-              <li>• Manual export creates immediate downloadable files</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
 
       {/* Folder Picker Dialog */}
       <Dialog open={showFolderPicker} onOpenChange={setShowFolderPicker}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Select Backup Folder</DialogTitle>
+            <DialogTitle>{t('backup.folderPicker.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Critical importance warning */}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="text-sm font-semibold text-red-800 mb-1">
+                    {t('backup.folderPicker.criticalImportance')}
+                  </h4>
+                  <p className="text-sm text-red-700">
+                    {t('backup.folderPicker.criticalDescription')}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <p className="text-sm text-gray-600">
-              Choose the folder where auto backup files will be stored.
+              {t('backup.folderPicker.description')}
             </p>
+
+            {/* Mobile-specific instructions */}
+            {isMobileDevice && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start space-x-2">
+                  <Shield className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-sm font-semibold text-blue-800 mb-2">
+                      {t('backup.folderPicker.mobileInstructions.title')}
+                    </h4>
+                    <div className="text-sm text-blue-700 space-y-2">
+                      <p>{t('backup.folderPicker.mobileInstructions.step1')}</p>
+                      <p>{t('backup.folderPicker.mobileInstructions.step2')}</p>
+                      <p>{t('backup.folderPicker.mobileInstructions.step3')}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Button 
                 onClick={handleFolderSelect}
@@ -744,10 +841,10 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
                 variant="outline"
               >
                 <FolderOpen className="h-4 w-4 mr-2" />
-                Select Folder
+                {t('backup.folderPicker.selectButton')}
               </Button>
               <p className="text-xs text-gray-500 text-center">
-                Note: Folder selection requires Chrome, Edge, or other modern browsers that support the File System Access API
+                {t('backup.folderPicker.browserNote')}
               </p>
             </div>
             <div className="flex space-x-2">
@@ -756,7 +853,7 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
                 variant="outline"
                 className="flex-1"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </div>
@@ -767,71 +864,71 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
       <Dialog open={showGoogleDriveConfig} onOpenChange={setShowGoogleDriveConfig}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Setup Google Drive</DialogTitle>
+            <DialogTitle>{t('backup.googleDrive.setupTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              To use Google Drive backup, you need to provide your Google API credentials. 
+              {t('backup.googleDrive.setupDescription')}
               <a 
                 href="https://console.developers.google.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-blue-600 underline ml-1"
               >
-                Get them here
+                {t('backup.googleDrive.getCredentials')}
               </a>
             </p>
             
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Client ID
+                  {t('backup.googleDrive.clientId')}
                 </label>
                 <input
                   type="text"
                   value={googleDriveConfig.clientId}
                   onChange={(e) => setGoogleDriveConfig({ ...googleDriveConfig, clientId: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Your Google API Client ID"
+                  placeholder={t('backup.googleDrive.clientIdPlaceholder')}
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  API Key
+                  {t('backup.googleDrive.apiKey')}
                 </label>
                 <input
                   type="text"
                   value={googleDriveConfig.apiKey}
                   onChange={(e) => setGoogleDriveConfig({ ...googleDriveConfig, apiKey: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Your Google API Key"
+                  placeholder={t('backup.googleDrive.apiKeyPlaceholder')}
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Folder Name (Optional)
+                  {t('backup.googleDrive.folderName')}
                 </label>
                 <input
                   type="text"
                   value={googleDriveConfig.folderName}
                   onChange={(e) => setGoogleDriveConfig({ ...googleDriveConfig, folderName: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Yoga Tracker Backups"
+                  placeholder={t('backup.googleDrive.folderNamePlaceholder')}
                 />
               </div>
             </div>
             
             <div className="bg-blue-50 p-3 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">Setup Instructions:</h4>
+              <h4 className="text-sm font-medium text-blue-900 mb-2">{t('backup.googleDrive.setupInstructions')}</h4>
               <ol className="text-xs text-blue-800 space-y-1">
-                <li>1. Go to Google Cloud Console</li>
-                <li>2. Create a new project or select existing</li>
-                <li>3. Enable Google Drive API</li>
-                <li>4. Create OAuth 2.0 credentials (Client ID)</li>
-                <li>5. Create API Key</li>
-                <li>6. Add your domain to authorized origins</li>
+                <li>1. {t('backup.googleDrive.setupSteps.1')}</li>
+                <li>2. {t('backup.googleDrive.setupSteps.2')}</li>
+                <li>3. {t('backup.googleDrive.setupSteps.3')}</li>
+                <li>4. {t('backup.googleDrive.setupSteps.4')}</li>
+                <li>5. {t('backup.googleDrive.setupSteps.5')}</li>
+                <li>6. {t('backup.googleDrive.setupSteps.6')}</li>
               </ol>
             </div>
             
@@ -841,14 +938,14 @@ export const BackupManager: React.FC<BackupManagerProps> = ({ onDataRestored }) 
                 variant="outline"
                 className="flex-1"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button 
                 onClick={handleGoogleDriveConfigSave}
                 disabled={isLoading}
                 className="flex-1"
               >
-                {isLoading ? 'Connecting...' : 'Connect'}
+                {isLoading ? t('backup.googleDrive.connecting') : t('backup.googleDrive.connect')}
               </Button>
             </div>
           </div>

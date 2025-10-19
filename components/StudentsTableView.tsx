@@ -8,12 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Student } from '@/lib/types';
 import { getStudents } from '@/lib/storage';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 type SortField = 'name' | 'balance' | 'sessions' | 'createdAt';
 type SortDirection = 'asc' | 'desc';
 
 export function StudentsTableView() {
   const router = useRouter();
+  const { getCurrentLanguage } = useTranslation();
   const [students, setStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('name');
@@ -49,9 +51,11 @@ export function StudentsTableView() {
   };
 
   const filteredAndSortedStudents = useMemo(() => {
-    let filtered = students.filter(student =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filtered = searchTerm.length < 2 
+      ? students 
+      : students.filter(student =>
+          student.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
     filtered.sort((a, b) => {
       let aValue: any;
@@ -99,7 +103,7 @@ export function StudentsTableView() {
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'

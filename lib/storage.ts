@@ -1,5 +1,5 @@
 import { Student, Session, AppSettings, StudentNote, BalanceTransaction } from './types';
-import { calculateAge, formatBalanceAsInteger } from './utils/dateUtils';
+import { calculateAge, formatBalanceAsInteger, generateTransactionReason } from './utils/dateUtils';
 
 const STUDENTS_KEY = 'yoga_tracker_students';
 const SESSIONS_KEY = 'yoga_tracker_sessions';
@@ -10,14 +10,14 @@ const defaultSettings: AppSettings = {
   defaultTeamSessionCharge: 1,
   defaultIndividualSessionCharge: 2,
   availableGoals: [
-    'Flexibility',
-    'Strength',
-    'Balance',
-    'Stress Relief',
-    'Weight Loss',
-    'Meditation',
-    'Core Work',
-    'Back Pain Relief'
+    'Гибкость',
+    'Сила',
+    'Баланс',
+    'Снятие стресса',
+    'Похудение',
+    'Медитация',
+    'Укрепление корпуса',
+    'Здоровая спина'
   ]
 };
 
@@ -94,6 +94,42 @@ export const addBalanceTransaction = (studentId: string, changeAmount: number, r
     transactionType: changeAmount > 0 ? 'added' : 'deducted',
     changeAmount,
     reason,
+    balanceAfter: newBalance
+  };
+  
+  student.balance = newBalance;
+  student.balanceTransactions = student.balanceTransactions || [];
+  student.balanceTransactions.push(transaction);
+  
+  saveStudent(student);
+  
+  // Dispatch specific balance transaction event
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('balanceTransactionAdded', { 
+      detail: { studentId, transaction, newBalance } 
+    }));
+  }
+};
+
+export const addBalanceTransactionBilingual = (
+  studentId: string, 
+  changeAmount: number, 
+  reasonEn: string, 
+  reasonRu: string
+): void => {
+  const students = getStudents();
+  const student = students.find(s => s.id === studentId);
+  if (!student) return;
+  
+  const newBalance = student.balance + changeAmount;
+  const transaction: BalanceTransaction = {
+    id: Date.now().toString(),
+    date: new Date(),
+    transactionType: changeAmount > 0 ? 'added' : 'deducted',
+    changeAmount,
+    reason: reasonEn, // Default to English for backward compatibility
+    reasonEn,
+    reasonRu,
     balanceAfter: newBalance
   };
   
@@ -344,6 +380,55 @@ export const completeSession = (sessionId: string, confirmedAttendeeIds: string[
     // Deduct sessions from balance
     const reason = `Session completed on ${new Date(session.date).toLocaleDateString()} (${session.sessionType})`;
     addBalanceTransaction(studentId, -sessionDeduction, reason);
+  });
+  
+  // Update session with confirmed attendees and mark as completed
+  session.studentIds = confirmedAttendeeIds;
+  session.status = 'completed';
+  saveSession(session);
+  
+  // Dispatch custom event for real-time updates
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('sessionUpdated', { detail: { sessionId, session } }));
+    window.dispatchEvent(new CustomEvent('sessionCompleted', { detail: { sessionId, session } }));
+    window.dispatchEvent(new CustomEvent('sessionChanged', { detail: { session } }));
+  }
+};
+
+// Complete session with translated transaction reasons
+export const completeSessionTranslated = (
+  sessionId: string, 
+  confirmedAttendeeIds: string[], 
+  t: (key: any, params?: any) => string
+): void => {
+  const sessions = getSessions();
+  const students = getStudents();
+  const session = sessions.find(s => s.id === sessionId);
+  
+  if (!session || session.status !== 'scheduled') return;
+  
+  // Determine how many sessions to deduct based on session type and settings
+  const settings = getSettings();
+  const sessionDeduction = session.sessionType === 'individual' ? settings.defaultIndividualSessionCharge : settings.defaultTeamSessionCharge;
+  
+  // Update student balances for confirmed attendees
+  confirmedAttendeeIds.forEach(studentId => {
+    const student = students.find(s => s.id === studentId);
+    if (!student) return;
+    
+    // Generate both English and Russian versions directly
+    const sessionDate = new Date(session.date);
+    const formattedDateEn = sessionDate.toLocaleDateString('en-US');
+    const formattedDateRu = sessionDate.toLocaleDateString('ru-RU');
+    
+    const sessionTypeEn = session.sessionType === 'team' ? 'team' : 'individual';
+    const sessionTypeRu = session.sessionType === 'team' ? 'командное' : 'индивидуальное';
+    
+    // Generate reasons using template strings with proper interpolation
+    const reasonEn = `Session completed on ${formattedDateEn} (${sessionTypeEn})`;
+    const reasonRu = `Занятие завершено ${formattedDateRu} (${sessionTypeRu})`;
+    
+    addBalanceTransactionBilingual(studentId, -sessionDeduction, reasonEn, reasonRu);
   });
   
   // Update session with confirmed attendees and mark as completed

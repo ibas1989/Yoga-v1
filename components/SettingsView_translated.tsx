@@ -76,70 +76,78 @@ export function SettingsView() {
 
   return (
     <div className="max-w-4xl">
-      {/* Fixed Header with Tabs, Language, and Save */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-        <div className="px-4 py-4">
-          {/* Tab Navigation */}
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-4">
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'settings'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {t('settings.title')}
-            </button>
-            <button
-              onClick={() => setActiveTab('backup')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'backup'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Shield className="h-4 w-4 inline mr-2" />
-              {t('settings.backup')}
-            </button>
-          </div>
-
-          {/* Language and Save Button */}
-          {activeTab === 'settings' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-end gap-2">
-                <Globe className="h-5 w-5" />
-                <span className="font-medium">Language / Язык</span>
-                <LanguageSwitcher variant="select" />
-              </div>
-              <div className="flex justify-end pt-2 border-t border-gray-100">
-                <Button onClick={handleSave} className="px-6 py-2">
-                  <Save className="h-4 w-4 mr-2" />
-                  {t('settings.saveSettings')}
-                </Button>
-              </div>
-            </div>
-          )}
+      {/* Fixed Tab Navigation */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 mb-6">
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mx-4 mt-4">
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'settings'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            {t('settings.title')}
+          </button>
+          <button
+            onClick={() => setActiveTab('backup')}
+            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'backup'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Shield className="h-4 w-4 inline mr-2" />
+            {t('settings.backup')}
+          </button>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="space-y-6 px-4 pt-6">
+      <div className="space-y-6 px-4">
 
       {activeTab === 'settings' && (
         <>
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Language Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Language / Язык
+              </CardTitle>
+              <CardDescription>
+                Choose your preferred language / Выберите предпочитаемый язык
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LanguageSwitcher variant="select" />
+            </CardContent>
+          </Card>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">{t('settings.defaultSessionCharges')}</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t('settings.configureDefaultCharges')}
+              </p>
+            </div>
+            <Button onClick={handleSave}>
+              <Save className="h-4 w-4 mr-2" />
+              {t('settings.saveSettings')}
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>{t('settings.teamSessions')}</CardTitle>
                 <CardDescription>
-                  {t('settings.defaultSessionChargeTeam')}
+                  Default session charge for team sessions
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Label htmlFor="team-charge">{t('settings.sessionCharge')}</Label>
+                  <Label htmlFor="team-charge">Session Charge</Label>
                   <Input
                     id="team-charge"
                     type="number"
@@ -156,12 +164,12 @@ export function SettingsView() {
               <CardHeader>
                 <CardTitle>{t('settings.individualSessions')}</CardTitle>
                 <CardDescription>
-                  {t('settings.defaultSessionChargeIndividual')}
+                  Default session charge for individual sessions
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Label htmlFor="individual-charge">{t('settings.sessionCharge')}</Label>
+                  <Label htmlFor="individual-charge">Session Charge</Label>
                   <Input
                     id="individual-charge"
                     type="number"
@@ -174,13 +182,12 @@ export function SettingsView() {
               </CardContent>
             </Card>
           </div>
-          </div>
 
           <Card>
             <CardHeader>
               <CardTitle>{t('settings.sessionGoalsTags')}</CardTitle>
               <CardDescription>
-                {t('settings.manageGoalsDescription')}
+                Manage available goals and tags for sessions
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -193,7 +200,8 @@ export function SettingsView() {
                     onKeyPress={(e) => e.key === 'Enter' && handleAddGoal()}
                   />
                   <Button onClick={handleAddGoal}>
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('settings.addGoal')}
                   </Button>
                 </div>
                 
@@ -210,7 +218,7 @@ export function SettingsView() {
                           <button
                             onClick={() => handleRemoveGoal(goal)}
                             className="hover:bg-primary/20 rounded-full p-1"
-                            aria-label={t('settings.removeGoal')}
+                            aria-label="Remove goal"
                           >
                             <X className="h-3 w-3" />
                           </button>

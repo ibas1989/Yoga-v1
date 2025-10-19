@@ -7,8 +7,9 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Session, Student } from '@/lib/types';
 import { getSessions, getStudents } from '@/lib/storage';
-import { formatDate, formatTime, formatTimeString } from '@/lib/utils/dateUtils';
+import { formatDate, formatTime, formatTimeString, formatDateLocalized } from '@/lib/utils/dateUtils';
 import { isSessionEndTimePassed } from '@/lib/utils';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 interface Task {
   id: string;
@@ -22,6 +23,7 @@ interface Task {
 
 export function TasksView() {
   const router = useRouter();
+  const { t, pluralize, getCurrentLanguage } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -78,11 +80,14 @@ export function TasksView() {
         return {
           id: `task-${session.id}`,
           sessionId: session.id,
-          sessionName: `Session with ${sessionStudents.length} student${sessionStudents.length > 1 ? 's' : ''}`,
+          sessionName: t('tasks.sessionWithStudents', { 
+            count: sessionStudents.length,
+            plural: pluralize(sessionStudents.length, '', 's')
+          }),
           scheduledDate: new Date(session.date),
           scheduledTime: session.startTime,
           studentNames: sessionStudents.map(s => s.name),
-          summary: `Conduct session, update attendance, adjust balance`
+          summary: t('tasks.conductSession')
         };
       });
 
@@ -115,7 +120,7 @@ export function TasksView() {
       <div className="space-y-6">
         {/* Fixed Header */}
         <div className="sticky top-0 z-50 bg-white border-b border-gray-200 p-4 shadow-sm">
-          <h2 className="text-lg font-semibold">Tasks</h2>
+          <h2 className="text-lg font-semibold">{t('tasks.title')}</h2>
         </div>
         
         {/* Content */}
@@ -124,9 +129,9 @@ export function TasksView() {
             <CardContent className="pt-6">
               <div className="text-center py-12">
                 <Loader2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground animate-spin" />
-                <h3 className="text-base font-semibold mb-2">Loading tasks...</h3>
+                <h3 className="text-base font-semibold mb-2">{t('tasks.loading')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Please wait while we fetch your overdue sessions.
+                  {t('tasks.loadingDescription')}
                 </p>
               </div>
             </CardContent>
@@ -140,9 +145,9 @@ export function TasksView() {
     <div className="space-y-6">
       {/* Fixed Header */}
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 p-4 shadow-sm">
-        <h2 className="text-lg font-semibold">Tasks</h2>
+        <h2 className="text-lg font-semibold">{t('tasks.title')}</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Sessions whose end time has passed and need to be completed
+          {t('tasks.description')}
         </p>
       </div>
       
@@ -153,9 +158,9 @@ export function TasksView() {
             <CardContent className="pt-6">
               <div className="text-center py-12">
                 <CheckSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-base font-semibold mb-2">No pending tasks</h3>
+                <h3 className="text-base font-semibold mb-2">{t('tasks.noPendingTasks')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  All your sessions are up to date! Great job staying on top of things.
+                  {t('tasks.allSessionsUpToDate')}
                 </p>
               </div>
             </CardContent>
@@ -180,11 +185,11 @@ export function TasksView() {
                       <div className="flex flex-col space-y-1 text-sm text-gray-500 mt-1">
                         <div className="flex items-center space-x-1">
                           <Calendar className="h-3 w-3" />
-                          <span>Date: {formatDate(task.scheduledDate)}</span>
+                          <span>{t('tasks.date')}: {formatDateLocalized(task.scheduledDate, getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US')}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Clock className="h-3 w-3" />
-                          <span>Time: {formatTimeString(task.scheduledTime)}</span>
+                          <span>{t('tasks.time')}: {formatTimeString(task.scheduledTime, getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US')}</span>
                         </div>
                       </div>
                     </div>
@@ -192,7 +197,7 @@ export function TasksView() {
                 </div>
                 <div className="flex items-center space-x-2 ml-4">
                   <span className="text-xs font-medium px-2 py-1 rounded-full text-orange-700 bg-orange-100">
-                    Pending
+                    {t('tasks.pending')}
                   </span>
                 </div>
               </div>
@@ -207,7 +212,7 @@ export function TasksView() {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Task Details</h3>
+                <h3 className="text-lg font-semibold">{t('tasks.taskDetails')}</h3>
                 <button
                   onClick={handleCloseTaskDetails}
                   className="text-gray-400 hover:text-gray-600"
@@ -222,7 +227,7 @@ export function TasksView() {
                   <div className="text-sm text-gray-600 space-y-1">
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4" />
-                      <span>{formatDate(selectedTask.scheduledDate)} at {formatTimeString(selectedTask.scheduledTime)}</span>
+                      <span>{formatDateLocalized(selectedTask.scheduledDate, getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US')} {t('common.at')} {formatTimeString(selectedTask.scheduledTime, getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US')}</span>
                     </div>
                     {selectedTask.studentNames.length > 0 && (
                       <div className="flex items-center space-x-2">
@@ -234,7 +239,7 @@ export function TasksView() {
                 </div>
                 
                 <div className="border-t pt-4">
-                  <h5 className="font-medium text-gray-900 mb-2">What to do:</h5>
+                  <h5 className="font-medium text-gray-900 mb-2">{t('tasks.whatToDo')}</h5>
                   <p className="text-sm text-gray-600">{selectedTask.summary}</p>
                 </div>
                 
@@ -244,14 +249,14 @@ export function TasksView() {
                     className="flex-1"
                   >
                     <CheckSquare className="h-4 w-4 mr-2" />
-                    Complete Task
+                    {t('tasks.completeTask')}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={handleCloseTaskDetails}
                     className="flex-1"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </Button>
                 </div>
               </div>

@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { format } from 'date-fns';
-import { Plus } from 'lucide-react';
+import { Plus, Target } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -23,11 +22,13 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Student, Session } from '@/lib/types';
 import { getStudents, getSettings, saveSession, getSessions } from '@/lib/storage';
 import { formatDateForUrl, parseDateFromUrl } from '@/lib/utils/dateUtils';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 export default function EditSessionPage() {
   const router = useRouter();
   const params = useParams();
   const sessionId = params.id as string;
+  const { t, getCurrentLanguage } = useTranslation();
   
   // Get return URL from query parameters if provided
   const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
@@ -64,9 +65,9 @@ export default function EditSessionPage() {
 
   // Duration options in minutes
   const durationOptions = [
-    { value: '60', label: '1 hour' },
-    { value: '90', label: '1.5 hours' },
-    { value: '120', label: '2 hours' },
+    { value: '60', label: t('sessions.durationOptions.oneHour') },
+    { value: '90', label: t('sessions.durationOptions.oneAndHalfHours') },
+    { value: '120', label: t('sessions.durationOptions.twoHours') },
   ];
 
   useEffect(() => {
@@ -201,7 +202,7 @@ export default function EditSessionPage() {
     if (!originalSession) return;
     
     if (selectedStudentIds.length === 0) {
-      alert('Please select at least one student');
+      alert(t('sessions.pleaseSelectStudent'));
       return;
     }
 
@@ -251,8 +252,8 @@ export default function EditSessionPage() {
   // Helper function to format balance as session count
   const formatBalanceAsSessionCount = (balance: number): string => {
     const sessionCount = Math.round(balance);
-    const plural = Math.abs(sessionCount) !== 1 ? 's' : '';
-    return `${sessionCount} session${plural}`;
+    const sessionText = Math.abs(sessionCount) === 1 ? t('common.session') : t('common.sessions');
+    return `${sessionCount} ${sessionText}`;
   };
 
 
@@ -260,7 +261,7 @@ export default function EditSessionPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Loading session...</p>
+          <p className="text-muted-foreground">{t('sessions.loadingSession')}</p>
         </div>
       </div>
     );
@@ -278,13 +279,13 @@ export default function EditSessionPage() {
               onClick={handleBackClick}
               className="flex items-center gap-2"
             >
-              ← Back
+              ← {t('sessions.back')}
             </Button>
             <h2 className="text-base font-medium text-muted-foreground">
-              Edit Session
+              {t('sessions.editSession')}
             </h2>
             <Button onClick={handleSave}>
-              Save
+              {t('sessions.save')}
             </Button>
           </div>
         </div>
@@ -296,15 +297,12 @@ export default function EditSessionPage() {
         <main className="container mx-auto px-4 py-8">
         <Card className="max-w-3xl mx-auto">
           <CardHeader>
-            <CardTitle>Session Details</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {format(selectedDate, 'EEEE, MMMM d, yyyy')}
-            </p>
+            <CardTitle>{t('sessions.sessionDetails')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Date Selection */}
             <div className="space-y-2">
-              <Label htmlFor="sessionDate">Session Date</Label>
+              <Label htmlFor="sessionDate">{t('sessions.sessionDate')}</Label>
               <Input
                 id="sessionDate"
                 type="date"
@@ -319,10 +317,10 @@ export default function EditSessionPage() {
             {/* Time and Duration Selection */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="startTime">Start Time</Label>
+                <Label htmlFor="startTime">{t('sessions.startTime')}</Label>
                 <Select value={startTime} onValueChange={setStartTime}>
                   <SelectTrigger id="startTime">
-                    <SelectValue placeholder="Select start time" />
+                    <SelectValue placeholder={t('sessions.selectStartTime')} />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {timeOptions.map((option) => (
@@ -334,10 +332,10 @@ export default function EditSessionPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="duration">Session Length</Label>
+                <Label htmlFor="duration">{t('sessions.sessionLength')}</Label>
                 <Select value={duration} onValueChange={setDuration}>
                   <SelectTrigger id="duration">
-                    <SelectValue placeholder="Select duration" />
+                    <SelectValue placeholder={t('sessions.selectDuration')} />
                   </SelectTrigger>
                   <SelectContent>
                     {durationOptions.map((option) => (
@@ -348,21 +346,21 @@ export default function EditSessionPage() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  End time: {calculateEndTime(startTime, parseInt(duration))}
+                  {t('sessions.endTime')}: {calculateEndTime(startTime, parseInt(duration))}
                 </p>
               </div>
             </div>
 
             {/* Session Type */}
             <div className="space-y-2">
-              <Label htmlFor="sessionType">Session Type</Label>
+              <Label htmlFor="sessionType">{t('sessions.sessionType')}</Label>
               <Select value={sessionType} onValueChange={(value) => setSessionType(value as 'team' | 'individual')}>
                 <SelectTrigger id="sessionType">
-                  <SelectValue placeholder="Select session type" />
+                  <SelectValue placeholder={t('sessions.selectSessionType')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="team">Team</SelectItem>
-                  <SelectItem value="individual">Individual</SelectItem>
+                  <SelectItem value="team">{t('sessions.team')}</SelectItem>
+                  <SelectItem value="individual">{t('sessions.individual')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -370,7 +368,7 @@ export default function EditSessionPage() {
             {/* Student Selection */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label>Session Attendees</Label>
+                <Label>{t('sessions.attendees')}</Label>
                 <Button
                   type="button"
                   variant="outline"
@@ -379,14 +377,14 @@ export default function EditSessionPage() {
                   className="h-8"
                 >
                   <Plus className="h-3 w-3 mr-1" />
-                  Add Student
+                  {t('sessions.addStudent')}
                 </Button>
               </div>
 
               {students.length === 0 ? (
                 <div className="border rounded-md p-6 text-center">
                   <p className="text-sm text-muted-foreground mb-3">
-                    No students available yet.
+                    {t('sessions.noStudentsAvailable')}
                   </p>
                   <Button
                     type="button"
@@ -395,7 +393,7 @@ export default function EditSessionPage() {
                     onClick={() => setShowAddStudentDialog(true)}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Your First Student
+                    {t('sessions.addYourFirstStudent')}
                   </Button>
                 </div>
               ) : (
@@ -404,7 +402,7 @@ export default function EditSessionPage() {
                   {selectedStudentIds.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-muted-foreground">
-                        Selected ({selectedStudentIds.length})
+                        {t('sessions.selected')} ({selectedStudentIds.length})
                       </p>
                       <div className="space-y-2">
                         {selectedStudentIds.map((studentId) => {
@@ -418,7 +416,7 @@ export default function EditSessionPage() {
                               <div className="flex-1">
                                 <p className="text-sm font-medium">{student.name}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  Balance: {formatBalanceAsSessionCount(student.balance)}
+                                  {t('sessions.balance')}: {formatBalanceAsSessionCount(student.balance)}
                                 </p>
                               </div>
                               <Button
@@ -429,7 +427,7 @@ export default function EditSessionPage() {
                                 className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
                               >
                                 <Plus className="h-4 w-4 rotate-45" />
-                                <span className="sr-only">Remove {student.name}</span>
+                                <span className="sr-only">{t('sessions.removeStudent', { studentName: student.name })}</span>
                               </Button>
                             </div>
                           );
@@ -444,7 +442,10 @@ export default function EditSessionPage() {
 
             {/* Session Goals/Tags */}
             <div className="space-y-2">
-              <Label>Session Goals/Tags</Label>
+              <Label className="flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                {t('sessions.sessionGoals')}
+              </Label>
               <div className="border rounded-md p-4 max-h-48 overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {availableGoals.map((goal) => (
@@ -468,13 +469,13 @@ export default function EditSessionPage() {
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
+              <Label htmlFor="notes">{t('sessions.notesOptional')}</Label>
               <Textarea
                 ref={notesTextareaRef}
                 id="notes"
                 value={notes}
                 onChange={handleNotesChange}
-                placeholder="Add any notes about this session..."
+                placeholder={t('sessions.addNotesPlaceholder')}
                 className="min-h-[80px] resize-none overflow-hidden"
                 rows={3}
               />
@@ -496,10 +497,10 @@ export default function EditSessionPage() {
       <ConfirmationDialog
         open={showBackConfirmation}
         onOpenChange={setShowBackConfirmation}
-        title="Unsaved Changes"
-        description="You have unsaved changes. Are you sure you want to leave this page?"
-        confirmText="Yes"
-        cancelText="No"
+        title={t('sessions.unsavedChanges')}
+        description={t('sessions.unsavedChangesDescription')}
+        confirmText={t('sessions.yes')}
+        cancelText={t('sessions.no')}
         onConfirm={confirmBackNavigation}
         onCancel={cancelBackNavigation}
       />

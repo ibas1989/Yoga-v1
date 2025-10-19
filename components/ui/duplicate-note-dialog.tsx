@@ -45,7 +45,7 @@ export function DuplicateNoteDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <AlertTriangle className="h-6 w-6 text-yellow-500" />
-            Duplicate Note Name
+            Duplicate note name
           </DialogTitle>
           <DialogDescription className="text-left">
             A note with the name <strong>"{noteName}"</strong> already exists for this student.
@@ -73,7 +73,7 @@ export function DuplicateNoteDialog({
             ) : (
               <FileText className="h-4 w-4" />
             )}
-            Create Anyway
+            Create anyway
           </Button>
         </DialogFooter>
       </DialogContent>

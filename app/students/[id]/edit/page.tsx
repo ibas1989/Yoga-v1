@@ -13,8 +13,10 @@ import { ContextualBar } from '@/components/ui/contextual-bar';
 import { Student } from '@/lib/types';
 import { saveStudent, getSettings, getStudents } from '@/lib/storage';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 export default function EditStudentPage() {
+  const { t, getCurrentLanguage } = useTranslation();
   const router = useRouter();
   const params = useParams();
   const studentId = params.id as string;
@@ -100,7 +102,7 @@ export default function EditStudentPage() {
     if (!originalStudent) return;
     
     if (!name.trim()) {
-      alert('Please enter a student name');
+      alert(t('validation.enterStudentName'));
       return;
     }
 
@@ -151,10 +153,11 @@ export default function EditStudentPage() {
 
 
   const formatDate = (date: Date | string | null | undefined) => {
-    if (!date) return 'Not specified';
+    if (!date) return t('common.notSpecified');
     const dateObj = date instanceof Date ? date : new Date(date);
-    if (isNaN(dateObj.getTime())) return 'Invalid date';
-    return new Intl.DateTimeFormat('en-US', {
+    if (isNaN(dateObj.getTime())) return t('common.invalidDate');
+    const locale = getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US';
+    return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -162,12 +165,14 @@ export default function EditStudentPage() {
   };
 
   const formatTime = (date: Date | string | null | undefined) => {
-    if (!date) return 'Not specified';
+    if (!date) return t('common.notSpecified');
     const dateObj = date instanceof Date ? date : new Date(date);
-    if (isNaN(dateObj.getTime())) return 'Invalid time';
-    return new Intl.DateTimeFormat('en-US', {
+    if (isNaN(dateObj.getTime())) return t('common.invalidTime');
+    const locale = getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US';
+    return new Intl.DateTimeFormat(locale, {
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false
     }).format(dateObj);
   };
 
@@ -176,7 +181,7 @@ export default function EditStudentPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground animate-spin" />
-          <p className="text-muted-foreground">Loading student data...</p>
+          <p className="text-muted-foreground">{t('studentPages.loadingStudentData')}</p>
         </div>
       </div>
     );
@@ -187,31 +192,35 @@ export default function EditStudentPage() {
       {/* Contextual Bar */}
       <div className="fixed top-0 left-0 right-0 z-40 bg-background border-b">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={handleBackClick}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 flex-shrink-0"
             >
-              ← Back
+              ← {t('studentPages.back')}
             </Button>
-            <h2 className="text-base font-medium text-muted-foreground">
-              Edit Student
-            </h2>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </>
-              )}
-            </Button>
+            <div className="flex-1 text-center">
+              <h2 className="text-base font-medium text-muted-foreground">
+                {t('studentPages.editStudent')}
+              </h2>
+            </div>
+            <div className="flex-shrink-0 w-24 flex justify-end">
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {t('studentPages.saving')}
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    {t('studentPages.save')}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -226,51 +235,51 @@ export default function EditStudentPage() {
             <CardContent className="space-y-4 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name">{t('studentForm.nameRequired')}</Label>
                   <Input
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter student name"
+                    placeholder={t('studentPages.enterStudentName')}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">{t('studentForm.phone')}</Label>
                   <Input
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Enter phone number"
+                    placeholder={t('studentPages.enterPhoneNumber')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="weight">Weight (kg)</Label>
+                  <Label htmlFor="weight">{t('studentForm.weight')}</Label>
                   <Input
                     id="weight"
                     type="number"
                     step="0.1"
                     value={weight || ''}
                     onChange={(e) => setWeight(parseFloat(e.target.value) || undefined)}
-                    placeholder="Enter weight"
+                    placeholder={t('studentPages.enterWeight')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="height">Height (cm)</Label>
+                  <Label htmlFor="height">{t('studentForm.height')}</Label>
                   <Input
                     id="height"
                     type="number"
                     step="0.1"
                     value={height || ''}
                     onChange={(e) => setHeight(parseFloat(e.target.value) || undefined)}
-                    placeholder="Enter height"
+                    placeholder={t('studentPages.enterHeight')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="birthday">Birthday</Label>
+                  <Label htmlFor="birthday">{t('studentForm.birthday')}</Label>
                   <Input
                     id="birthday"
                     type="date"
@@ -280,7 +289,7 @@ export default function EditStudentPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="memberSince">Member Since</Label>
+                  <Label htmlFor="memberSince">{t('studentPages.memberSince')}</Label>
                   <Input
                     id="memberSince"
                     type="date"
@@ -290,13 +299,13 @@ export default function EditStudentPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="balance">Current Balance (Sessions)</Label>
+                  <Label htmlFor="balance">{t('studentPages.currentBalance')}</Label>
                   <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
                     <p className="text-sm font-medium text-gray-700">
-                      {balance > 0 ? `+${balance}` : balance} sessions
+                      {balance > 0 ? `+${balance}` : balance} {Math.abs(balance) === 1 ? t('calendar.sessions.session') : t('calendar.sessions.sessions')}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Balance is automatically updated by the system. Use the "Add Balance Transaction" button on the student details page to modify.
+                      {t('studentPages.balanceSystemManaged')}
                     </p>
                   </div>
                 </div>
@@ -309,7 +318,7 @@ export default function EditStudentPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center">
                 <FileText className="h-5 w-5 mr-2" />
-                Description
+                {t('studentForm.description')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -318,7 +327,7 @@ export default function EditStudentPage() {
                 name="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="General description about the student..."
+                placeholder={t('studentForm.descriptionPlaceholder')}
                 className="w-full min-h-[100px] px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </CardContent>
@@ -328,11 +337,11 @@ export default function EditStudentPage() {
           {/* Goals */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Goals & Focus Areas</CardTitle>
+              <CardTitle className="text-lg">{t('studentPages.goalsAndFocusAreas')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">Select goals for this student:</p>
+                <p className="text-sm text-muted-foreground">{t('studentPages.selectGoalsForStudent')}</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {availableGoals.map((goal) => (
                     <div key={goal} className="flex items-center space-x-2">
@@ -360,10 +369,10 @@ export default function EditStudentPage() {
       <ConfirmationDialog
         open={showBackConfirmation}
         onOpenChange={setShowBackConfirmation}
-        title="Unsaved Changes"
-        description="You have unsaved changes. Are you sure you want to leave this page?"
-        confirmText="Yes"
-        cancelText="No"
+        title={t('studentPages.unsavedChanges')}
+        description={t('studentPages.unsavedChangesDescription')}
+        confirmText={t('studentPages.yes')}
+        cancelText={t('studentPages.no')}
         onConfirm={confirmBackNavigation}
         onCancel={cancelBackNavigation}
       />

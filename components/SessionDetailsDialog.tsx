@@ -13,6 +13,7 @@ import {
 import { Card, CardContent } from './ui/card';
 import { Session, Student } from '@/lib/types';
 import { getStudents, getSettings } from '@/lib/storage';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 interface SessionDetailsDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ export function SessionDetailsDialog({
   onRequestEdit,
   onAttendeeClick,
 }: SessionDetailsDialogProps) {
+  const { t, getCurrentLanguage } = useTranslation();
   const [students, setStudents] = useState<Student[]>([]);
 
   useEffect(() => {
@@ -53,9 +55,22 @@ export function SessionDetailsDialog({
       cancelled: 'bg-red-100 text-red-700 border border-red-300',
     };
 
+    const getStatusLabel = (status: Session['status']) => {
+      switch (status) {
+        case 'scheduled':
+          return t('sessionDetails.scheduled');
+        case 'completed':
+          return t('sessionDetails.completed');
+        case 'cancelled':
+          return t('sessionDetails.cancelled');
+        default:
+          return (status as string).charAt(0).toUpperCase() + (status as string).slice(1);
+      }
+    };
+
     return (
       <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${styles[status]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {getStatusLabel(status)}
       </span>
     );
   };
@@ -65,22 +80,34 @@ export function SessionDetailsDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle>Session Details</DialogTitle>
+            <DialogTitle>{t('sessionDetails.title')}</DialogTitle>
           </div>
-          <DialogDescription>
-            {format(new Date(session.date), 'EEEE, MMMM d, yyyy')}
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Time and Session Information */}
+          {/* Date and Time Information */}
           <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <CalendarIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">{t('sessionDetails.date')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(session.date).toLocaleDateString(getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              </div>
+            </div>
+
             <div className="flex items-start gap-3">
               <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Time</p>
+                    <p className="text-sm font-medium">{t('sessionDetails.time')}</p>
                     <p className="text-sm text-muted-foreground">
                       {session.startTime} - {session.endTime}
                     </p>
@@ -95,9 +122,9 @@ export function SessionDetailsDialog({
             <div className="flex items-start gap-3">
               <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium">Session Type</p>
+                <p className="text-sm font-medium">{t('sessionDetails.sessionType')}</p>
                 <p className="text-sm text-muted-foreground">
-                  {session.sessionType.charAt(0).toUpperCase() + session.sessionType.slice(1)}
+                  {session.sessionType === 'team' ? t('sessionDetails.team') : t('sessionDetails.individual')}
                 </p>
               </div>
             </div>
@@ -108,12 +135,12 @@ export function SessionDetailsDialog({
             <div className="flex items-center gap-2">
               <User className="h-5 w-5 text-muted-foreground" />
               <p className="text-sm font-medium">
-                Attendees ({sessionStudents.length})
+                {t('sessionDetails.attendees')} ({sessionStudents.length})
               </p>
             </div>
             <div className="space-y-2 pl-7 max-h-[300px] overflow-y-auto">
               {sessionStudents.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No students assigned</p>
+                <p className="text-sm text-muted-foreground">{t('sessionDetails.noStudentsAssigned')}</p>
               ) : (
                 sessionStudents.map((student) => (
                   <Card key={student.id} className="hover:shadow-sm transition-shadow cursor-pointer" onClick={() => onAttendeeClick && onAttendeeClick(student.id)}>
@@ -128,7 +155,7 @@ export function SessionDetailsDialog({
                               ? 'text-red-600' 
                               : 'text-gray-600'
                           }`}>
-                            Current Balance: {student.balance > 0 ? `+${student.balance}` : student.balance} {Math.abs(student.balance) === 1 ? 'session' : 'sessions'}
+                            {t('sessionDetails.currentBalance')}: {student.balance > 0 ? `+${student.balance}` : student.balance} {Math.abs(student.balance) === 1 ? t('sessionDetails.session') : t('sessionDetails.sessions')}
                           </p>
                         </div>
                       </div>
@@ -144,7 +171,7 @@ export function SessionDetailsDialog({
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Tag className="h-5 w-5 text-muted-foreground" />
-                <p className="text-sm font-medium">Session Goals</p>
+                <p className="text-sm font-medium">{t('sessionDetails.sessionGoals')}</p>
               </div>
               <div className="flex flex-wrap gap-2 pl-7">
                 {session.goals.map((goal) => (
@@ -164,7 +191,7 @@ export function SessionDetailsDialog({
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-muted-foreground" />
-                <p className="text-sm font-medium">Notes</p>
+                <p className="text-sm font-medium">{t('sessionDetails.notes')}</p>
               </div>
               <p className="text-sm text-muted-foreground pl-7 break-words break-all whitespace-pre-wrap hyphens-auto overflow-x-hidden">{session.notes}</p>
             </div>
@@ -175,7 +202,11 @@ export function SessionDetailsDialog({
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <CalendarIcon className="h-4 w-4" />
               <span>
-                Created on {format(new Date(session.createdAt), 'MMM d, yyyy')}
+                {t('sessionDetails.createdOn')} {new Date(session.createdAt).toLocaleDateString(getCurrentLanguage() === 'ru' ? 'ru-RU' : 'en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
               </span>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { BottomNavigationWithParams } from "@/components/ui/bottom-navigation";
 import { ClientBody } from "@/components/ClientBody";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { I18nProvider } from "@/components/I18nProvider";
 import { Suspense } from "react";
 
 const inter = Inter({ 
@@ -70,16 +71,18 @@ export default function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <ClientBody className={inter.className}>
-        <ErrorBoundary>
-          <Suspense fallback={<div className="fixed bottom-0 left-0 right-0 h-[88px] bg-background border-t" />}>
-            <BottomNavigationWithParams />
-          </Suspense>
-          {/* Add bottom padding to account for fixed bottom navigation (88px height) */}
-          <div className="pb-[88px]">
-            {children}
-          </div>
-          <PWAInstallPrompt />
-        </ErrorBoundary>
+        <I18nProvider>
+          <ErrorBoundary>
+            <Suspense fallback={<div className="fixed bottom-0 left-0 right-0 h-[88px] bg-background border-t" />}>
+              <BottomNavigationWithParams />
+            </Suspense>
+            {/* Add bottom padding to account for fixed bottom navigation (88px height) */}
+            <div className="pb-[88px]">
+              {children}
+            </div>
+            <PWAInstallPrompt />
+          </ErrorBoundary>
+        </I18nProvider>
       </ClientBody>
     </html>
   );

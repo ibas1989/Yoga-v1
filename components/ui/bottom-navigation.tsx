@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Calendar as CalendarIcon, Users, Settings, CheckSquare } from 'lucide-react';
 import { Badge } from './badge';
 import { getPendingTasksCount } from '@/lib/utils';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 /**
  * BottomNavigation Component
@@ -29,6 +30,7 @@ export function BottomNavigationWithParams() {
 }
 
 export function BottomNavigation({ pathname, viewParam }: { pathname: string; viewParam: string | null }) {
+  const { t } = useTranslation();
   const [pendingTasksCount, setPendingTasksCount] = useState(0);
   const [badgeAnimationKey, setBadgeAnimationKey] = useState(0);
   
@@ -125,25 +127,25 @@ export function BottomNavigation({ pathname, viewParam }: { pathname: string; vi
   const navItems = [
     {
       id: 'calendar',
-      label: 'Calendar',
+      label: t('navigation.calendar'),
       icon: CalendarIcon,
       view: 'calendar' as const,
     },
     {
       id: 'students',
-      label: 'Students',
+      label: t('navigation.students'),
       icon: Users,
       view: 'students' as const,
     },
     {
       id: 'tasks',
-      label: 'Tasks',
+      label: t('navigation.tasks'),
       icon: CheckSquare,
       view: 'tasks' as const,
     },
     {
       id: 'settings',
-      label: 'Settings',
+      label: t('navigation.settings'),
       icon: Settings,
       view: 'settings' as const,
     },

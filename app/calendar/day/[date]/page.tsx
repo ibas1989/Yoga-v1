@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { format, parseISO, isSameDay } from 'date-fns';
+import { ru, enUS } from 'date-fns/locale';
 import { ArrowLeft, Clock, Users, CheckCircle, XCircle, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,11 +12,13 @@ import { getSessions, getStudents } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 import { formatDateForUrl, parseDateFromUrl } from '@/lib/utils/dateUtils';
 import { useDayNavigationSwipe } from '@/lib/hooks/useMobileSwipe';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 export default function CalendarDayViewPage() {
   const router = useRouter();
   const params = useParams();
   const dateParam = params.date as string;
+  const { t, getCurrentLanguage } = useTranslation();
   
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -139,7 +142,7 @@ export default function CalendarDayViewPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('calendarDay.loading')}</p>
         </div>
       </div>
     );
@@ -148,8 +151,8 @@ export default function CalendarDayViewPage() {
   return (
     <div className="min-h-screen bg-background touch-manipulation" ref={swipeRef}>
       {/* Header Section - Fixed at top of screen */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
-        <div className="container mx-auto px-4 py-4">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b shadow-sm">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
             <Button
               variant="ghost"
@@ -158,63 +161,69 @@ export default function CalendarDayViewPage() {
               className="gap-2 flex-shrink-0"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back to Calendar</span>
-              <span className="sm:hidden">Back</span>
+              <span className="hidden sm:inline">{t('calendarDay.backToCalendar')}</span>
+              <span className="sm:hidden">{t('calendarDay.back')}</span>
             </Button>
             <div className="text-center flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold">
-                {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+              <h1 className="text-xl sm:text-2xl font-bold leading-tight">
+                <div className="capitalize">{format(selectedDate, 'EEEE', { locale: getCurrentLanguage() === 'ru' ? ru : enUS })}</div>
+                <div className="text-lg sm:text-xl capitalize">
+                  {getCurrentLanguage() === 'ru' 
+                    ? format(selectedDate, 'd MMMM, yyyy', { locale: ru })
+                    : format(selectedDate, 'MMMM d, yyyy', { locale: enUS })
+                  }
+                </div>
               </h1>
             </div>
             <div className="flex-shrink-0 w-24"></div> {/* Spacer for balance */}
           </div>
 
           {/* Day Summary Section */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 mb-1">
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground">Total Sessions</p>
-                    <p className="text-2xl font-bold">{daySessions.length}</p>
+                    <p className="text-xs text-muted-foreground">{t('calendarDay.totalSessions')}</p>
+                    <p className="text-lg font-bold">{daySessions.length}</p>
                   </div>
-                  <CalendarIcon className="h-8 w-8 text-muted-foreground opacity-50" />
+                  <CalendarIcon className="h-5 w-5 text-muted-foreground opacity-50" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground">Scheduled</p>
-                    <p className="text-2xl font-bold text-gray-600">{scheduledCount}</p>
+                    <p className="text-xs text-muted-foreground">{t('calendarDay.scheduled')}</p>
+                    <p className="text-lg font-bold text-gray-600">{scheduledCount}</p>
                   </div>
-                  <Clock className="h-8 w-8 text-gray-600 opacity-50" />
+                  <Clock className="h-5 w-5 text-gray-600 opacity-50" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground">Completed</p>
-                    <p className="text-2xl font-bold text-green-600">{completedCount}</p>
+                    <p className="text-xs text-muted-foreground">{t('calendarDay.completed')}</p>
+                    <p className="text-lg font-bold text-green-600">{completedCount}</p>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-green-600 opacity-50" />
+                  <CheckCircle className="h-5 w-5 text-green-600 opacity-50" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground">Canceled</p>
-                    <p className="text-2xl font-bold text-red-600">{cancelledCount}</p>
+                    <p className="text-xs text-muted-foreground">{t('calendarDay.canceled')}</p>
+                    <p className="text-lg font-bold text-red-600">{cancelledCount}</p>
                   </div>
-                  <XCircle className="h-8 w-8 text-red-600 opacity-50" />
+                  <XCircle className="h-5 w-5 text-red-600 opacity-50" />
                 </div>
               </CardContent>
             </Card>
@@ -223,7 +232,7 @@ export default function CalendarDayViewPage() {
       </div>
 
       {/* Main Timeline Section */}
-      <main className="container mx-auto px-4 pt-[296px] pb-8">
+      <main className="container mx-auto px-4 pt-[240px] sm:pt-[260px] pb-8">
         <Card>
           <CardContent className="p-0">
             {/* Timeline grid with labels and session overlay */}
@@ -256,7 +265,7 @@ export default function CalendarDayViewPage() {
                       <div
                         className="flex-1 p-2 cursor-pointer hover:bg-accent/30 transition-colors rounded-sm"
                         onClick={() => handleTimeSlotClick(timeSlot)}
-                        title={`Click to add session at ${timeSlot}`}
+                        title={t('calendarDay.clickToAddSession', { time: timeSlot })}
                       />
                     </div>
                   );
@@ -306,19 +315,19 @@ export default function CalendarDayViewPage() {
                             "bg-white/20 backdrop-blur-sm"
                           )}>
                             {getStatusIcon(session.status)}
-                            {session.status}
+                            {t(`calendarDay.status.${session.status}`)}
                           </span>
                         </div>
 
                         {/* Details */}
                         <div className="flex-1 min-w-0">
                           <p className="text-xs opacity-90 mb-1">
-                            {session.sessionType.charAt(0).toUpperCase() + session.sessionType.slice(1)} Session
+                            {session.sessionType === 'team' ? t('sessionDetails.team') : t('sessionDetails.individual')} {t('calendarDay.session')}
                           </p>
                           <div className="flex items-center gap-1 text-xs opacity-90">
                             <Users className="h-3 w-3" />
                             <span>
-                              {sessionStudents.length} {sessionStudents.length === 1 ? 'attendee' : 'attendees'}
+                              {sessionStudents.length} {sessionStudents.length === 1 ? t('calendarDay.attendee') : t('calendarDay.attendees')}
                             </span>
                           </div>
                           {sessionStudents.length > 0 && (

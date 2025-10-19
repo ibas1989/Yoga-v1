@@ -17,6 +17,7 @@ import { Label } from './ui/label';
 import { Session, Student } from '@/lib/types';
 import { getStudents, saveStudent, getSettings } from '@/lib/storage';
 import { AddStudentDialog } from './AddStudentDialog';
+import { useTranslation } from '@/lib/hooks/useTranslation';
 
 interface CompleteSessionDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ export function CompleteSessionDialog({
   session,
   onConfirm,
 }: CompleteSessionDialogProps) {
+  const { t } = useTranslation();
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [showAddStudentDialog, setShowAddStudentDialog] = useState(false);
@@ -117,9 +119,12 @@ export function CompleteSessionDialog({
       }}>
         <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Complete Session</DialogTitle>
+            <DialogTitle>{t('completeSession.title')}</DialogTitle>
             <DialogDescription>
-              Confirm attendees for this session. Students will be charged {sessionDeduction} {sessionDeduction === 1 ? 'session' : 'sessions'}.
+              {t('completeSession.description', { 
+                count: sessionDeduction, 
+                sessionText: sessionDeduction === 1 ? t('common.session') : t('common.sessions') 
+              })}
             </DialogDescription>
           </DialogHeader>
 
@@ -128,10 +133,13 @@ export function CompleteSessionDialog({
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="p-4">
                 <p className="text-sm font-medium text-blue-900">
-                  Session Type: <span className="capitalize">{session.sessionType}</span>
+                  {t('completeSession.sessionType')}: {session.sessionType === 'team' ? t('sessions.team') : t('sessions.individual')}
                 </p>
                 <p className="text-xs text-blue-700 mt-1">
-                  Each attendee will be deducted <strong>{sessionDeduction} {sessionDeduction === 1 ? 'session' : 'sessions'}</strong> from their balance
+                  {t('completeSession.eachAttendeeDeducted', { 
+                    count: sessionDeduction, 
+                    sessionText: sessionDeduction === 1 ? t('common.session') : t('common.sessions') 
+                  })}
                 </p>
               </CardContent>
             </Card>
@@ -140,9 +148,9 @@ export function CompleteSessionDialog({
             {originalAttendees.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Planned Attendees</Label>
+                  <Label className="text-sm font-medium">{t('completeSession.plannedAttendees')}</Label>
                   <span className="text-xs text-muted-foreground">
-                    Uncheck if they did not attend
+                    {t('completeSession.uncheckIfNotAttended')}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -163,10 +171,10 @@ export function CompleteSessionDialog({
                               {student.name}
                             </Label>
                             <p className="text-xs text-muted-foreground">
-                              Current Balance: {student.balance} {Math.abs(student.balance) === 1 ? 'session' : 'sessions'}
+                              {t('completeSession.currentBalance')}: {student.balance} {Math.abs(student.balance) === 1 ? t('common.session') : t('common.sessions')}
                               {selectedStudentIds.includes(student.id) && (
                                 <span className="ml-2 text-orange-600 font-medium">
-                                  → After: {student.balance - sessionDeduction}
+                                  → {t('completeSession.after')}: {student.balance - sessionDeduction}
                                 </span>
                               )}
                             </p>
@@ -188,7 +196,7 @@ export function CompleteSessionDialog({
             {addedStudents.length > 0 && (
               <div className="space-y-3">
                 <Label className="text-sm font-medium text-green-700">
-                  Added Attendees (Not Planned)
+                  {t('completeSession.addedAttendees')}
                 </Label>
                 <div className="space-y-2">
                   {addedStudents.map((student) => (
@@ -208,9 +216,9 @@ export function CompleteSessionDialog({
                               {student.name}
                             </Label>
                             <p className="text-xs text-muted-foreground">
-                              Current Balance: {student.balance} {Math.abs(student.balance) === 1 ? 'session' : 'sessions'}
+                              {t('completeSession.currentBalance')}: {student.balance} {Math.abs(student.balance) === 1 ? t('common.session') : t('common.sessions')}
                               <span className="ml-2 text-orange-600 font-medium">
-                                → After: {student.balance - sessionDeduction}
+                                → {t('completeSession.after')}: {student.balance - sessionDeduction}
                               </span>
                             </p>
                           </div>
@@ -230,7 +238,7 @@ export function CompleteSessionDialog({
               className="w-full"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Add Student (Not Planned)
+              {t('completeSession.addStudentNotPlanned')}
             </Button>
 
             {/* Summary */}
@@ -238,12 +246,8 @@ export function CompleteSessionDialog({
               <CardContent className="p-4">
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Attendees:</span>
+                    <span className="text-muted-foreground">{t('completeSession.totalAttendees')}:</span>
                     <span className="font-medium">{selectedStudentIds.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Sessions to Deduct:</span>
-                    <span className="font-medium">{sessionDeduction} per attendee</span>
                   </div>
                 </div>
               </CardContent>
@@ -252,14 +256,14 @@ export function CompleteSessionDialog({
 
           <DialogFooter className="flex flex-row justify-end gap-2">
             <Button variant="outline" onClick={handleCancel}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button 
               className="bg-green-600 hover:bg-green-700"
               onClick={handleConfirm}
               disabled={selectedStudentIds.length === 0}
             >
-              Complete Session
+              {t('completeSession.completeSession')}
             </Button>
           </DialogFooter>
         </DialogContent>

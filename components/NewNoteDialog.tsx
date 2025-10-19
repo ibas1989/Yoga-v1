@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { ConfirmationDialog } from './ui/confirmation-dialog';
+import { useTranslation } from '../lib/hooks/useTranslation';
 
 interface NewNoteDialogProps {
   open: boolean;
@@ -14,6 +15,7 @@ interface NewNoteDialogProps {
 }
 
 export function NewNoteDialog({ open, onOpenChange, onSave, isLoading = false }: NewNoteDialogProps) {
+  const { t } = useTranslation();
   const [noteContent, setNoteContent] = useState('');
   const [showUnsavedChangesConfirm, setShowUnsavedChangesConfirm] = useState(false);
 
@@ -58,9 +60,9 @@ export function NewNoteDialog({ open, onOpenChange, onSave, isLoading = false }:
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle className="text-center">New Note</DialogTitle>
+            <DialogTitle className="text-center">{t('newNoteDialog.title')}</DialogTitle>
             <DialogDescription>
-              Add a new note for this student. Notes help track progress and important information.
+              {t('newNoteDialog.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -71,14 +73,14 @@ export function NewNoteDialog({ open, onOpenChange, onSave, isLoading = false }:
                 name="new-note-content"
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
-                placeholder="Enter your note content here …"
+                placeholder={t('newNoteDialog.placeholder')}
                 maxLength={2000}
                 className="w-full min-h-[200px] px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-vertical"
                 style={{ whiteSpace: 'pre-wrap' }}
                 disabled={isLoading}
               />
               <div className="text-right text-xs text-muted-foreground">
-                {noteContent.length}/2000 characters
+                {t('newNoteDialog.characterCount', { count: noteContent.length })}
               </div>
             </div>
           </div>
@@ -92,10 +94,10 @@ export function NewNoteDialog({ open, onOpenChange, onSave, isLoading = false }:
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Creating...
+                  {t('newNoteDialog.creating')}
                 </div>
               ) : (
-                'Create'
+                t('newNoteDialog.create')
               )}
             </Button>
           </div>
@@ -106,10 +108,10 @@ export function NewNoteDialog({ open, onOpenChange, onSave, isLoading = false }:
       <ConfirmationDialog
         open={showUnsavedChangesConfirm}
         onOpenChange={setShowUnsavedChangesConfirm}
-        title="Unsaved Changes"
-        description="You have unsaved changes. Are you sure you want to close this note?"
-        confirmText="Yes, Close"
-        cancelText="No, Keep Editing"
+        title={t('newNoteDialog.unsavedChanges')}
+        description={t('newNoteDialog.unsavedChangesDescription')}
+        confirmText={t('newNoteDialog.yesClose')}
+        cancelText={t('newNoteDialog.noKeepEditing')}
         onConfirm={handleCloseConfirmed}
         onCancel={() => setShowUnsavedChangesConfirm(false)}
         isLoading={false}
