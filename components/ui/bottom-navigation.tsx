@@ -57,10 +57,10 @@ export function BottomNavigation({ pathname, viewParam }: { pathname: string; vi
       updatePendingTasksCount();
     };
     
-    // Set up interval to check for sessions becoming overdue
-    const intervalId = setInterval(() => {
-      updatePendingTasksCount();
-    }, 60000); // Check every minute
+    // Note: Cron job now handles session checking, so we don't need this interval
+    // const intervalId = setInterval(() => {
+    //   updatePendingTasksCount();
+    // }, 60000); // Check every minute
     
     if (typeof window !== 'undefined') {
       // Listen to all session change events
@@ -82,7 +82,7 @@ export function BottomNavigation({ pathname, viewParam }: { pathname: string; vi
         window.removeEventListener('sessionChanged', handleSessionChanged);
         window.removeEventListener('taskListUpdate', handleSessionChanged);
         window.removeEventListener('storage', handleStorageChange);
-        clearInterval(intervalId);
+        // clearInterval(intervalId); // No longer needed
       };
     }
   }, []);

@@ -20,7 +20,20 @@ function SessionDetailsPageWithParams() {
   
   // Get return URL from query parameters if provided
   const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-  const returnTo = searchParams.get('returnTo') || '/?view=calendar';
+  const returnToParam = searchParams.get('returnTo');
+  
+  // Decode the returnTo parameter and provide smart fallback
+  let returnTo = '/?view=calendar'; // Default fallback to calendar
+  
+  if (returnToParam) {
+    try {
+      // Decode the URL-encoded returnTo parameter
+      returnTo = decodeURIComponent(returnToParam);
+    } catch (error) {
+      console.warn('Failed to decode returnTo parameter:', error);
+      // Keep default fallback
+    }
+  }
   
   return <SessionDetailsPage sessionId={sessionId} returnTo={returnTo} />;
 }
@@ -39,8 +52,12 @@ function SessionDetailsPage({ sessionId, returnTo }: { sessionId: string; return
 
   // Mobile swipe navigation - swipe right to go back
   const swipeRef = useMobileSwipe({
-    onSwipeRight: () => router.push(returnTo)
+    onSwipeRight: () => handleBackNavigation()
   });
+
+  const handleBackNavigation = () => {
+    router.push(returnTo);
+  };
 
   useEffect(() => {
     loadSessionData();
@@ -203,7 +220,7 @@ function SessionDetailsPage({ sessionId, returnTo }: { sessionId: string; return
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => router.push(returnTo)}
+              onClick={handleBackNavigation}
               className="flex items-center gap-2"
             >
               ← {t('sessions.back')}

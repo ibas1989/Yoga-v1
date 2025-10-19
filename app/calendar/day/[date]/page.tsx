@@ -105,7 +105,7 @@ export default function CalendarDayViewPage() {
     // Use local date formatting to avoid UTC conversion issues
     const dateStr = formatDateForUrl(selectedDate);
     // Pass return URL so session details can navigate back to day view
-    router.push(`/sessions/${session.id}?returnTo=/calendar/day/${dateStr}`);
+    router.push(`/sessions/${session.id}?returnTo=${encodeURIComponent(`/calendar/day/${dateStr}`)}`);
   };
 
 

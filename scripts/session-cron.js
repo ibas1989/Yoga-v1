@@ -9,7 +9,7 @@
   
   // Configuration
   const CRON_INTERVAL = 30 * 60 * 1000; // 30 minutes in milliseconds
-  const CHECK_INTERVAL = 60 * 1000; // Check every minute for sessions becoming overdue
+  const CHECK_INTERVAL = 2 * 60 * 1000; // Check every 2 minutes for sessions becoming overdue
   const STORAGE_KEY = 'yoga_tracker_sessions';
   
   let cronJobRunning = false;
@@ -18,9 +18,12 @@
   /**
    * Log a message with timestamp
    */
-  function log(message) {
+  function log(message, forceLog = false) {
     const timestamp = new Date().toISOString();
-    console.log(`[Session Cron ${timestamp}] ${message}`);
+    // Only log important messages to reduce console spam
+    if (forceLog || message.includes('Starting') || message.includes('Stopping') || message.includes('Found') || message.includes('Error')) {
+      console.log(`[Session Cron ${timestamp}] ${message}`);
+    }
   }
   
   /**
