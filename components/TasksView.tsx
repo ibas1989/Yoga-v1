@@ -77,12 +77,29 @@ export function TasksView() {
           session.studentIds.includes(student.id)
         );
         
+        // Get the correct Russian form for "студент" based on count
+        let studentForm = '';
+        if (getCurrentLanguage() === 'ru') {
+          studentForm = pluralize(
+            sessionStudents.length,
+            'студентом',      // 1 студентом (instrumental singular)
+            'студентами',     // 2+ студентами (instrumental plural)
+            'студентами'      // 5+ студентами (instrumental plural)
+          );
+        } else {
+          studentForm = pluralize(
+            sessionStudents.length,
+            'student',        // 1 student
+            'students'        // 2+ students
+          );
+        }
+
         return {
           id: `task-${session.id}`,
           sessionId: session.id,
           sessionName: t('tasks.sessionWithStudents', { 
             count: sessionStudents.length,
-            plural: pluralize(sessionStudents.length, '', 's')
+            studentForm: studentForm
           }),
           scheduledDate: new Date(session.date),
           scheduledTime: session.startTime,

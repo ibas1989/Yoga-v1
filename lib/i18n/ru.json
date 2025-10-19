@@ -336,7 +336,7 @@
     "noOverdueSessions": "Нет просроченных занятий",
     "overdueBy": "Просрочено на {{count}} {{dayText}}",
     "sessionWith": "Занятие с {{studentName}}",
-    "sessionWithStudents": "Занятие с {{count}} студентом{{plural}}",
+    "sessionWithStudents": "Занятие с {{count}} {{studentForm}}",
     "completeSession": "Завершить занятие",
     "cancelSession": "Отменить занятие",
     "taskDetails": "Детали задачи",

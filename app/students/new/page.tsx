@@ -44,14 +44,14 @@ function NewStudentContent() {
     const goals = settings.availableGoals && settings.availableGoals.length > 0 
       ? settings.availableGoals 
       : [
-          'Flexibility',
-          'Strength',
-          'Balance',
-          'Stress Relief',
-          'Weight Loss',
-          'Meditation',
-          'Core Work',
-          'Back Pain Relief'
+          'Гибкость',
+          'Сила',
+          'Баланс',
+          'Снятие стресса',
+          'Похудение',
+          'Медитация',
+          'Укрепление корпуса',
+          'Здоровая спина'
         ];
     
     setAvailableGoals(goals);
