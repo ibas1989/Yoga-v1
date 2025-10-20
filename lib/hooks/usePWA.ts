@@ -45,6 +45,19 @@ export function usePWA() {
     // Register service worker
     const registerSW = async () => {
       if ('serviceWorker' in navigator) {
+        // Do not register service worker in development to avoid chunk 404s
+        const isProduction = process.env.NODE_ENV === 'production';
+        if (!isProduction) {
+          try {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const reg of regs) {
+              await reg.unregister();
+            }
+          } catch (e) {
+            // ignore
+          }
+          return;
+        }
         try {
           const registration = await navigator.serviceWorker.register('/sw.js');
           setPwaState(prev => ({ ...prev, swRegistration: registration }));
