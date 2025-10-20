@@ -336,7 +336,7 @@
     "noOverdueSessions": "No overdue sessions",
     "overdueBy": "Overdue by {{count}} {{dayText}}",
     "sessionWith": "Session with {{studentName}}",
-    "sessionWithStudents": "Session with {{count}} student{{plural}}",
+    "sessionWithStudents": "Session with {{count}} {{studentForm}}",
     "completeSession": "Complete session",
     "cancelSession": "Cancel session",
     "taskDetails": "Task details",
