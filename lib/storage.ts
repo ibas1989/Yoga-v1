@@ -1,5 +1,6 @@
 import { Student, Session, AppSettings, StudentNote, BalanceTransaction } from './types';
 import { calculateAge, formatBalanceAsInteger, generateTransactionReason } from './utils/dateUtils';
+import { safeStorage } from './hydrationUtils';
 
 const STUDENTS_KEY = 'yoga_tracker_students';
 const SESSIONS_KEY = 'yoga_tracker_sessions';
@@ -24,7 +25,7 @@ const defaultSettings: AppSettings = {
 // Students
 export const getStudents = (): Student[] => {
   if (typeof window === 'undefined') return [];
-  const data = localStorage.getItem(STUDENTS_KEY);
+  const data = safeStorage.getItem(STUDENTS_KEY);
   if (!data) return [];
   const students = JSON.parse(data);
   return students.map((s: any) => {
@@ -73,7 +74,7 @@ export const saveStudent = (student: Student): void => {
   } else {
     students.push(studentToSave);
   }
-  localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
+  safeStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
   
   // Dispatch custom events for real-time updates
   if (typeof window !== 'undefined') {
@@ -149,13 +150,13 @@ export const addBalanceTransactionBilingual = (
 
 export const deleteStudent = (studentId: string): void => {
   const students = getStudents().filter(s => s.id !== studentId);
-  localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
+  safeStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
 };
 
 // Sessions
 export const getSessions = (): Session[] => {
   if (typeof window === 'undefined') return [];
-  const data = localStorage.getItem(SESSIONS_KEY);
+  const data = safeStorage.getItem(SESSIONS_KEY);
   if (!data) return [];
   const sessions = JSON.parse(data);
   return sessions.map((s: any) => {
@@ -182,7 +183,7 @@ export const saveSession = (session: Session): void => {
   } else {
     sessions.push(session);
   }
-  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+  safeStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
   
   // Dispatch custom events for real-time updates
   if (typeof window !== 'undefined') {
@@ -198,7 +199,7 @@ export const saveSession = (session: Session): void => {
 
 export const deleteSession = (sessionId: string): void => {
   const sessions = getSessions().filter(s => s.id !== sessionId);
-  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+  safeStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
   
   // Dispatch custom event for real-time updates
   if (typeof window !== 'undefined') {
@@ -289,10 +290,9 @@ export const updateStudentNote = (studentId: string, noteId: string, content: st
 // Settings
 export const getSettings = (): AppSettings => {
   if (typeof window === 'undefined') return defaultSettings;
-  const data = localStorage.getItem(SETTINGS_KEY);
+  const data = safeStorage.getItem(SETTINGS_KEY);
   if (!data) {
-    // Initialize settings on first load
-    saveSettings(defaultSettings);
+    // Do not write on first load; just return defaults when storage is unavailable
     return defaultSettings;
   }
   const parsedSettings = JSON.parse(data);
@@ -304,7 +304,8 @@ export const getSettings = (): AppSettings => {
 };
 
 export const saveSettings = (settings: AppSettings): void => {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  // Attempt to persist; ignore failure in restricted environments
+  safeStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 };
 
 // Close session and update student balances

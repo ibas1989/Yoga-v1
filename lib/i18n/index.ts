@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { safeStorage } from '../hydrationUtils';
 
 // Import translation files
 import enTranslations from './en.json';
@@ -28,8 +29,8 @@ i18n
     },
     
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage'],
+      order: safeStorage.isAvailable() ? ['localStorage', 'navigator', 'htmlTag'] : ['navigator', 'htmlTag'],
+      caches: safeStorage.isAvailable() ? ['localStorage'] : [],
     },
   });
 
