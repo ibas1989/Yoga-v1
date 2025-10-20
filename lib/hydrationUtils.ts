@@ -60,3 +60,46 @@ export const isBrowserExtensionPresent = () => {
     document.body.getAttribute('data-1password-root')
   );
 };
+
+/**
+ * Safe Web Storage guard to prevent crashes when localStorage is unavailable
+ * (iOS Safari Private mode, blocked cookies, etc.).
+ */
+export const safeStorage = {
+  isAvailable(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+      const k = '__storage_test__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  getItem(key: string): string | null {
+    if (!this.isAvailable()) return null;
+    try {
+      return window.localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem(key: string, value: string): boolean {
+    if (!this.isAvailable()) return false;
+    try {
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  removeItem(key: string): void {
+    if (!this.isAvailable()) return;
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      // ignore
+    }
+  }
+};

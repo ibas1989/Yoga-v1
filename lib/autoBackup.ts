@@ -1,5 +1,6 @@
 import { generateBackup, BackupData } from './backup';
 import { getGoogleDriveService, GoogleDriveConfig } from './googleDriveBackup';
+import { safeStorage } from './hydrationUtils';
 
 export interface AutoBackupConfig {
   enabled: boolean;
@@ -41,7 +42,7 @@ export interface BackupHistoryItem {
 export const getAutoBackupConfig = (): AutoBackupConfig => {
   if (typeof window === 'undefined') return defaultAutoBackupConfig;
   
-  const stored = localStorage.getItem(AUTO_BACKUP_KEY);
+  const stored = safeStorage.getItem(AUTO_BACKUP_KEY);
   if (!stored) return defaultAutoBackupConfig;
   
   return { ...defaultAutoBackupConfig, ...JSON.parse(stored) };
@@ -51,7 +52,7 @@ export const getAutoBackupConfig = (): AutoBackupConfig => {
  * Save auto backup configuration
  */
 export const saveAutoBackupConfig = (config: AutoBackupConfig): void => {
-  localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(config));
+  safeStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(config));
 };
 
 /**
@@ -60,7 +61,7 @@ export const saveAutoBackupConfig = (config: AutoBackupConfig): void => {
 export const getBackupHistory = (): BackupHistoryItem[] => {
   if (typeof window === 'undefined') return [];
   
-  const stored = localStorage.getItem(BACKUP_HISTORY_KEY);
+  const stored = safeStorage.getItem(BACKUP_HISTORY_KEY);
   if (!stored) return [];
   
   return JSON.parse(stored);
@@ -85,7 +86,7 @@ export const addBackupToHistory = (backup: BackupData): void => {
   
   // Keep only the most recent backups
   const trimmedHistory = history.slice(0, config.maxBackups);
-  localStorage.setItem(BACKUP_HISTORY_KEY, JSON.stringify(trimmedHistory));
+  safeStorage.setItem(BACKUP_HISTORY_KEY, JSON.stringify(trimmedHistory));
 };
 
 /**
@@ -97,7 +98,7 @@ export const clearOldBackups = (): void => {
   
   if (history.length > config.maxBackups) {
     const trimmedHistory = history.slice(0, config.maxBackups);
-    localStorage.setItem(BACKUP_HISTORY_KEY, JSON.stringify(trimmedHistory));
+    safeStorage.setItem(BACKUP_HISTORY_KEY, JSON.stringify(trimmedHistory));
   }
 };
 
@@ -132,7 +133,11 @@ export const performAutoBackup = async (): Promise<{ success: boolean; message: 
     if (config.storageLocation === 'browser') {
       // Store in browser localStorage
       const backupKey = `yoga_tracker_auto_backup_${Date.now()}`;
-      localStorage.setItem(backupKey, JSON.stringify(backup));
+      if (!safeStorage.setItem(backupKey, JSON.stringify(backup))) {
+        // Fallback to download when storage is not available
+        await downloadBackupFile(backup);
+        return { success: true, message: 'Auto backup saved as download (storage unavailable)' };
+      }
     } else if (config.storageLocation === 'downloads') {
       // Download backup file
       await downloadBackupFile(backup);
