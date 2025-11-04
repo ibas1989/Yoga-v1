@@ -113,7 +113,7 @@ export function SettingsView() {
                 <LanguageSwitcher variant="select" />
               </div>
               <div className="flex justify-end pt-2 border-t border-gray-100">
-                <Button onClick={handleSave} className="px-6 py-2">
+                <Button onClick={handleSave} className="px-6 py-2 text-white" style={{ backgroundColor: '#4C7D2D' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3D6324'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4C7D2D'}>
                   <Save className="h-4 w-4 mr-2" />
                   {t('settings.saveSettings')}
                 </Button>

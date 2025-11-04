@@ -131,7 +131,7 @@ export function SettingsView() {
                 {t('settings.configureDefaultCharges')}
               </p>
             </div>
-            <Button onClick={handleSave}>
+            <Button onClick={handleSave} className="text-white" style={{ backgroundColor: '#4C7D2D' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3D6324'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4C7D2D'}>
               <Save className="h-4 w-4 mr-2" />
               {t('settings.saveSettings')}
             </Button>
