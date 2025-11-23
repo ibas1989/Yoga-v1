@@ -187,6 +187,19 @@ export const performAutoBackup = async (): Promise<{ success: boolean; message: 
 };
 
 /**
+ * Format date and time as DD-MM-YYYY_HH-MM-SS
+ */
+const formatBackupDateTime = (date: Date): string => {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${day}-${month}-${year}_${hours}-${minutes}-${seconds}`;
+};
+
+/**
  * Download backup file
  */
 const downloadBackupFile = async (backup: BackupData): Promise<void> => {
@@ -196,7 +209,7 @@ const downloadBackupFile = async (backup: BackupData): Promise<void> => {
   
   const link = document.createElement('a');
   link.href = url;
-  link.download = `yoga-auto-backup-${new Date(backup.timestamp).toISOString().split('T')[0]}.json`;
+  link.download = `${formatBackupDateTime(new Date(backup.timestamp))}_Yoga_Backup.json`;
   
   document.body.appendChild(link);
   link.click();

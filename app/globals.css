@@ -70,6 +70,30 @@
     min-width: 44px;
   }
   
+  /* Safe area insets for mobile devices (notches, Dynamic Island, etc.) */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Combined safe area top with standard padding */
+  .safe-top-bar {
+    padding-top: env(safe-area-inset-top, 12px);
+    padding-top: max(env(safe-area-inset-top, 12px), 12px);
+    padding-bottom: 12px;
+  }
+  
   /* Badge animation keyframes */
   @keyframes badgePulse {
     0% {

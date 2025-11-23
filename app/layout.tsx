@@ -53,7 +53,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#10b981"
+  themeColor: "#10b981",
+  viewportFit: "cover"
 };
 
 export default function RootLayout({
@@ -64,20 +65,28 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
         <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
         <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <ClientBody className={inter.className}>
         <I18nProvider>
           <ErrorBoundary>
-            <Suspense fallback={<div className="fixed bottom-0 left-0 right-0 h-[88px] bg-background border-t" />}>
+            <Suspense fallback={
+              <>
+                <div className="md:hidden fixed bottom-0 left-0 right-0 h-[88px] bg-background border-t" />
+                <div className="hidden md:block fixed top-0 left-0 right-0 h-16 bg-background border-b" />
+              </>
+            }>
               <BottomNavigationWithParams />
             </Suspense>
-            {/* Add bottom padding to account for fixed bottom navigation (88px height) */}
-            <div className="pb-[88px]">
+            {/* Add bottom padding on mobile (88px) and top padding on desktop (64px) to account for fixed navigation */}
+            <div className="pb-[88px] md:pb-0 md:pt-16">
               {children}
             </div>
             <PWAInstallPrompt />

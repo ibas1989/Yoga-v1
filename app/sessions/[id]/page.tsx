@@ -175,8 +175,8 @@ function SessionDetailsPage({ sessionId, returnTo }: { sessionId: string; return
     return (
       <div className="min-h-screen bg-background">
         {/* Mobile-friendly header with back button */}
-        <div className="sticky top-0 z-40 bg-background border-b">
-          <div className="container mx-auto px-4 py-3">
+        <div className="sticky top-0 z-40 bg-background border-b safe-top-bar">
+          <div className="container mx-auto px-4 pb-3">
             <div className="flex items-center justify-between">
               <Button 
                 variant="ghost" 
@@ -214,8 +214,8 @@ function SessionDetailsPage({ sessionId, returnTo }: { sessionId: string; return
   return (
     <div className="min-h-screen bg-background" ref={swipeRef}>
       {/* Mobile-friendly header with back button */}
-      <div className="sticky top-0 z-40 bg-background border-b">
-        <div className="container mx-auto px-4 py-3">
+      <div className="sticky top-0 z-40 bg-background border-b safe-top-bar">
+        <div className="container mx-auto px-4 pb-3">
           <div className="flex items-center justify-between">
             <Button 
               variant="ghost" 

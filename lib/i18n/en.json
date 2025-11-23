@@ -1,4 +1,7 @@
 {
+  "app": {
+    "title": "Yoga Tracker"
+  },
   "navigation": {
     "calendar": "Calendar",
     "students": "Students",

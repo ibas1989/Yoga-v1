@@ -158,8 +158,8 @@ function NewStudentContent() {
   return (
     <div className="min-h-screen bg-background">
       {/* Contextual Bar */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-background border-b">
-        <div className="container mx-auto px-4 py-3">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-background border-b safe-top-bar">
+        <div className="container mx-auto px-4 pb-3">
           <div className="flex items-center justify-between">
             <Button 
               variant="ghost" 
@@ -181,8 +181,8 @@ function NewStudentContent() {
         </div>
       </div>
 
-      {/* Add top padding to account for contextual bar */}
-      <div className="pt-[48px]">
+      {/* Add top padding to account for contextual bar and safe area */}
+      <div className="pt-20">
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">
         <Card className="max-w-3xl mx-auto">

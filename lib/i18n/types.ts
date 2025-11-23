@@ -1,5 +1,6 @@
 // Type definitions for translation keys
 export type TranslationKeys = 
+  | 'app.title'
   | 'navigation.calendar'
   | 'navigation.students'
   | 'navigation.tasks'

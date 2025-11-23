@@ -152,48 +152,104 @@ export function BottomNavigation({ pathname, viewParam }: { pathname: string; vi
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
-      <div className="flex items-center justify-around py-3 px-4">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeView === item.view;
-          
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleNavigation(item.view)}
-              className={`
-                flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all duration-300 ease-in-out
-                min-h-[64px] min-w-[64px] touch-manipulation relative
-                ${isActive 
-                  ? 'bg-green-100 text-green-700 shadow-md transform scale-105' 
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }
-              `}
-              aria-label={`Navigate to ${item.label}`}
-            >
-              <div className="relative">
-                <Icon className={`h-6 w-6 mb-1 transition-colors duration-300 ${
+    <>
+      {/* Mobile Bottom Navigation - Only visible on mobile devices */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+        <div className="flex items-center justify-around py-3 px-4">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeView === item.view;
+            
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavigation(item.view)}
+                className={`
+                  flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all duration-300 ease-in-out
+                  min-h-[64px] min-w-[64px] touch-manipulation relative
+                  ${isActive 
+                    ? 'bg-green-100 text-green-700 shadow-md transform scale-105' 
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }
+                `}
+                aria-label={`Navigate to ${item.label}`}
+              >
+                <div className="relative">
+                  <Icon className={`h-6 w-6 mb-1 transition-colors duration-300 ${
+                    isActive ? 'text-green-700' : 'text-gray-500'
+                  }`} />
+                  {/* Show badge only for Tasks tab */}
+                  {item.id === 'tasks' && (
+                    <Badge 
+                      key={badgeAnimationKey}
+                      count={pendingTasksCount} 
+                      className={badgeAnimationKey > 0 ? 'badge-count-change' : ''}
+                    />
+                  )}
+                </div>
+                <span className={`text-xs font-semibold transition-colors duration-300 ${
                   isActive ? 'text-green-700' : 'text-gray-500'
-                }`} />
-                {/* Show badge only for Tasks tab */}
-                {item.id === 'tasks' && (
-                  <Badge 
-                    key={badgeAnimationKey}
-                    count={pendingTasksCount} 
-                    className={badgeAnimationKey > 0 ? 'badge-count-change' : ''}
-                  />
-                )}
-              </div>
-              <span className={`text-xs font-semibold transition-colors duration-300 ${
-                isActive ? 'text-green-700' : 'text-gray-500'
-              }`}>
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </nav>
+                }`}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Desktop Top Navigation - Only visible on desktop/tablet devices */}
+      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-md">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-2">
+              <CalendarIcon className="h-8 w-8 text-green-600" />
+              <h1 className="text-xl font-bold text-gray-800">{t('app.title') || 'Yoga Tracker'}</h1>
+            </div>
+            
+            <div className="flex items-center space-x-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeView === item.view;
+                
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavigation(item.view)}
+                    className={`
+                      flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200
+                      ${isActive 
+                        ? 'bg-green-100 text-green-700 font-semibold shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                      }
+                    `}
+                    aria-label={`Navigate to ${item.label}`}
+                  >
+                    <div className="relative">
+                      <Icon className={`h-5 w-5 transition-colors ${
+                        isActive ? 'text-green-700' : 'text-gray-600'
+                      }`} />
+                      {/* Show badge only for Tasks tab */}
+                      {item.id === 'tasks' && pendingTasksCount > 0 && (
+                        <Badge 
+                          key={badgeAnimationKey}
+                          count={pendingTasksCount} 
+                          className={badgeAnimationKey > 0 ? 'badge-count-change' : ''}
+                        />
+                      )}
+                    </div>
+                    <span className={`text-sm transition-colors ${
+                      isActive ? 'text-green-700' : 'text-gray-600'
+                    }`}>
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </nav>
+    </>
   );
 }
