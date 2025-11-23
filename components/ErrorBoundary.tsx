@@ -36,7 +36,19 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       return;
     }
     
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Log detailed error information for debugging
+    console.error('ErrorBoundary caught an error:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+    });
+    
+    // Try to send error to console for mobile debugging
+    if (typeof window !== 'undefined' && window.console) {
+      console.error('Full error object:', error);
+      console.error('Error info:', errorInfo);
+    }
   }
 
   render() {

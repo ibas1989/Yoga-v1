@@ -40,6 +40,9 @@ try {
         });
     } else {
       // Client-side: use full config with LanguageDetector
+      // For mobile browsers, be more defensive about localStorage access
+      const canUseLocalStorage = safeStorage.isAvailable();
+      
       i18n
         .use(LanguageDetector)
         .use(initReactI18next)
@@ -53,9 +56,18 @@ try {
           },
           
           detection: {
-            order: safeStorage.isAvailable() ? ['localStorage', 'navigator', 'htmlTag'] : ['navigator', 'htmlTag'],
-            caches: safeStorage.isAvailable() ? ['localStorage'] : [],
+            // On mobile, prefer navigator over localStorage for better compatibility
+            order: canUseLocalStorage ? ['localStorage', 'navigator', 'htmlTag'] : ['navigator', 'htmlTag'],
+            caches: canUseLocalStorage ? ['localStorage'] : [],
+            // Add mobile browser compatibility options
+            lookupLocalStorage: canUseLocalStorage ? 'i18nextLng' : undefined,
           },
+        })
+        .catch((err) => {
+          // If initialization fails, log but don't throw
+          if (typeof console !== 'undefined' && console.warn) {
+            console.warn('i18n initialization warning (non-critical):', err);
+          }
         });
     }
   }
