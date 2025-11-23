@@ -17,44 +17,52 @@ const resources = {
 };
 
 // Initialize i18n - handle both server and client side
-if (!i18n.isInitialized) {
-  // For server-side rendering, use minimal config without LanguageDetector
-  if (typeof window === 'undefined') {
-    i18n
-      .use(initReactI18next)
-      .init({
-        resources,
-        fallbackLng: 'en',
-        lng: 'en', // Default to English on server
-        debug: false,
-        interpolation: {
-          escapeValue: false,
-        },
-        // No detection on server side
-        detection: {
-          order: ['htmlTag'],
-          caches: [],
-        },
-      });
-  } else {
-    // Client-side: use full config with LanguageDetector
-    i18n
-      .use(LanguageDetector)
-      .use(initReactI18next)
-      .init({
-        resources,
-        fallbackLng: 'en',
-        debug: process.env.NODE_ENV === 'development',
-        
-        interpolation: {
-          escapeValue: false, // React already does escaping
-        },
-        
-        detection: {
-          order: safeStorage.isAvailable() ? ['localStorage', 'navigator', 'htmlTag'] : ['navigator', 'htmlTag'],
-          caches: safeStorage.isAvailable() ? ['localStorage'] : [],
-        },
-      });
+// Use a try-catch to prevent initialization errors from breaking the build
+try {
+  if (!i18n.isInitialized) {
+    // For server-side rendering, use minimal config without LanguageDetector
+    if (typeof window === 'undefined') {
+      i18n
+        .use(initReactI18next)
+        .init({
+          resources,
+          fallbackLng: 'en',
+          lng: 'en', // Default to English on server
+          debug: false,
+          interpolation: {
+            escapeValue: false,
+          },
+          // No detection on server side
+          detection: {
+            order: ['htmlTag'],
+            caches: [],
+          },
+        });
+    } else {
+      // Client-side: use full config with LanguageDetector
+      i18n
+        .use(LanguageDetector)
+        .use(initReactI18next)
+        .init({
+          resources,
+          fallbackLng: 'en',
+          debug: process.env.NODE_ENV === 'development',
+          
+          interpolation: {
+            escapeValue: false, // React already does escaping
+          },
+          
+          detection: {
+            order: safeStorage.isAvailable() ? ['localStorage', 'navigator', 'htmlTag'] : ['navigator', 'htmlTag'],
+            caches: safeStorage.isAvailable() ? ['localStorage'] : [],
+          },
+        });
+    }
+  }
+} catch (error) {
+  // Log error but don't break the build
+  if (typeof console !== 'undefined' && console.error) {
+    console.error('i18n initialization error:', error);
   }
 }
 

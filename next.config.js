@@ -29,6 +29,16 @@ const nextConfig = {
     if (process.env.NODE_ENV === 'production') {
       return [
         {
+          // Don't apply CSP to Next.js static assets
+          source: '/_next/:path*',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=31536000, immutable',
+            },
+          ],
+        },
+        {
           source: '/(.*)',
           headers: [
             {
